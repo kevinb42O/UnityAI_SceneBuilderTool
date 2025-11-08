@@ -450,6 +450,599 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ['biome'],
         },
       },
+      {
+        name: 'unity_set_rotation_quaternion',
+        description: 'Set rotation using quaternion (x, y, z, w) for precise orientation without gimbal lock. Best for complex rotations.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              description: 'Name/path of the GameObject',
+            },
+            quaternion: {
+              type: 'object',
+              description: 'Quaternion rotation (x, y, z, w)',
+              properties: {
+                x: { type: 'number' },
+                y: { type: 'number' },
+                z: { type: 'number' },
+                w: { type: 'number' }
+              },
+              required: ['x', 'y', 'z', 'w']
+            }
+          },
+          required: ['name', 'quaternion'],
+        },
+      },
+      {
+        name: 'unity_look_at',
+        description: 'Make a GameObject look at a target position or another GameObject. Useful for cameras, spotlights, or directional objects.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              description: 'Name/path of the GameObject to rotate',
+            },
+            targetName: {
+              type: 'string',
+              description: 'Name of target GameObject to look at (mutually exclusive with targetPosition)',
+            },
+            targetPosition: {
+              type: 'object',
+              description: 'World position to look at (mutually exclusive with targetName)',
+              properties: {
+                x: { type: 'number' },
+                y: { type: 'number' },
+                z: { type: 'number' }
+              }
+            },
+            upVector: {
+              type: 'object',
+              description: 'Up direction (default: 0,1,0)',
+              properties: {
+                x: { type: 'number', default: 0 },
+                y: { type: 'number', default: 1 },
+                z: { type: 'number', default: 0 }
+              }
+            }
+          },
+          required: ['name'],
+        },
+      },
+      {
+        name: 'unity_align_to_surface',
+        description: 'Align GameObject to surface normal using raycast. Perfect for placing objects on terrain or walls.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              description: 'Name/path of the GameObject',
+            },
+            rayOrigin: {
+              type: 'object',
+              description: 'Origin point for raycast',
+              properties: {
+                x: { type: 'number' },
+                y: { type: 'number' },
+                z: { type: 'number' }
+              },
+              required: ['x', 'y', 'z']
+            },
+            rayDirection: {
+              type: 'object',
+              description: 'Direction of raycast (default: down 0,-1,0)',
+              properties: {
+                x: { type: 'number', default: 0 },
+                y: { type: 'number', default: -1 },
+                z: { type: 'number', default: 0 }
+              }
+            },
+            maxDistance: {
+              type: 'number',
+              description: 'Maximum raycast distance (default: 100)',
+              default: 100
+            },
+            offset: {
+              type: 'number',
+              description: 'Height offset from surface (default: 0)',
+              default: 0
+            }
+          },
+          required: ['name', 'rayOrigin'],
+        },
+      },
+      {
+        name: 'unity_set_local_transform',
+        description: 'Set LOCAL position, rotation, and scale relative to parent. Essential for hierarchical structures.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              description: 'Name/path of the GameObject',
+            },
+            localPosition: {
+              type: 'object',
+              description: 'Local position relative to parent',
+              properties: {
+                x: { type: 'number' },
+                y: { type: 'number' },
+                z: { type: 'number' }
+              }
+            },
+            localRotation: {
+              type: 'object',
+              description: 'Local Euler rotation relative to parent',
+              properties: {
+                x: { type: 'number' },
+                y: { type: 'number' },
+                z: { type: 'number' }
+              }
+            },
+            localScale: {
+              type: 'object',
+              description: 'Local scale (not affected by parent scale)',
+              properties: {
+                x: { type: 'number' },
+                y: { type: 'number' },
+                z: { type: 'number' }
+              }
+            }
+          },
+          required: ['name'],
+        },
+      },
+      {
+        name: 'unity_duplicate_object',
+        description: 'Duplicate a GameObject with optional offset. Returns the name of the duplicated object.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            sourceName: {
+              type: 'string',
+              description: 'Name/path of the GameObject to duplicate',
+            },
+            newName: {
+              type: 'string',
+              description: 'Name for the duplicate',
+            },
+            offset: {
+              type: 'object',
+              description: 'Position offset from original',
+              properties: {
+                x: { type: 'number', default: 0 },
+                y: { type: 'number', default: 0 },
+                z: { type: 'number', default: 0 }
+              }
+            },
+            parent: {
+              type: 'string',
+              description: 'Optional parent for the duplicate',
+            }
+          },
+          required: ['sourceName', 'newName'],
+        },
+      },
+      {
+        name: 'unity_create_linear_array',
+        description: 'Create a linear array of duplicated objects along a direction. Perfect for fences, pillars, or roads.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            sourceName: {
+              type: 'string',
+              description: 'Name/path of the GameObject to duplicate',
+            },
+            count: {
+              type: 'number',
+              description: 'Number of copies to create',
+              minimum: 1
+            },
+            spacing: {
+              type: 'object',
+              description: 'Spacing vector between copies',
+              properties: {
+                x: { type: 'number' },
+                y: { type: 'number' },
+                z: { type: 'number' }
+              },
+              required: ['x', 'y', 'z']
+            },
+            namePrefix: {
+              type: 'string',
+              description: 'Prefix for naming duplicates (will add _0, _1, etc.)',
+            },
+            parent: {
+              type: 'string',
+              description: 'Optional parent group for all copies',
+            }
+          },
+          required: ['sourceName', 'count', 'spacing'],
+        },
+      },
+      {
+        name: 'unity_create_circular_array',
+        description: 'Create a circular array of duplicated objects around a center point. Perfect for columns, pillars, or radial structures.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            sourceName: {
+              type: 'string',
+              description: 'Name/path of the GameObject to duplicate',
+            },
+            count: {
+              type: 'number',
+              description: 'Number of copies around the circle',
+              minimum: 3
+            },
+            radius: {
+              type: 'number',
+              description: 'Radius of the circle',
+            },
+            center: {
+              type: 'object',
+              description: 'Center point of the circle',
+              properties: {
+                x: { type: 'number' },
+                y: { type: 'number' },
+                z: { type: 'number' }
+              },
+              required: ['x', 'y', 'z']
+            },
+            rotateToCenter: {
+              type: 'boolean',
+              description: 'Whether copies should face the center (default: true)',
+              default: true
+            },
+            namePrefix: {
+              type: 'string',
+              description: 'Prefix for naming duplicates (will add _0, _1, etc.)',
+            },
+            parent: {
+              type: 'string',
+              description: 'Optional parent group for all copies',
+            }
+          },
+          required: ['sourceName', 'count', 'radius', 'center'],
+        },
+      },
+      {
+        name: 'unity_create_grid_array',
+        description: 'Create a 3D grid array of duplicated objects. Perfect for buildings, cities, or tiled floors.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            sourceName: {
+              type: 'string',
+              description: 'Name/path of the GameObject to duplicate',
+            },
+            countX: {
+              type: 'number',
+              description: 'Number of copies along X axis',
+              minimum: 1
+            },
+            countY: {
+              type: 'number',
+              description: 'Number of copies along Y axis',
+              minimum: 1
+            },
+            countZ: {
+              type: 'number',
+              description: 'Number of copies along Z axis',
+              minimum: 1
+            },
+            spacingX: {
+              type: 'number',
+              description: 'Spacing between copies on X axis',
+            },
+            spacingY: {
+              type: 'number',
+              description: 'Spacing between copies on Y axis',
+            },
+            spacingZ: {
+              type: 'number',
+              description: 'Spacing between copies on Z axis',
+            },
+            namePrefix: {
+              type: 'string',
+              description: 'Prefix for naming duplicates (will add _x_y_z)',
+            },
+            parent: {
+              type: 'string',
+              description: 'Optional parent group for all copies',
+            }
+          },
+          required: ['sourceName', 'countX', 'countY', 'countZ', 'spacingX', 'spacingY', 'spacingZ'],
+        },
+      },
+      {
+        name: 'unity_snap_to_grid',
+        description: 'Snap GameObject position to a grid. Useful for level design and alignment.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              description: 'Name/path of the GameObject',
+            },
+            gridSize: {
+              type: 'number',
+              description: 'Grid size in units (e.g., 1.0 for 1-unit grid)',
+            }
+          },
+          required: ['name', 'gridSize'],
+        },
+      },
+      {
+        name: 'unity_create_light',
+        description: 'Create a light source (Directional, Point, Spot, or Area) with full control over properties.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              description: 'Name of the light',
+            },
+            lightType: {
+              type: 'string',
+              description: 'Type of light',
+              enum: ['Directional', 'Point', 'Spot', 'Area']
+            },
+            position: {
+              type: 'object',
+              description: 'Light position',
+              properties: {
+                x: { type: 'number' },
+                y: { type: 'number' },
+                z: { type: 'number' }
+              }
+            },
+            rotation: {
+              type: 'object',
+              description: 'Light rotation (for directional/spot)',
+              properties: {
+                x: { type: 'number' },
+                y: { type: 'number' },
+                z: { type: 'number' }
+              }
+            },
+            color: {
+              type: 'object',
+              description: 'Light color (RGB 0-1)',
+              properties: {
+                r: { type: 'number' },
+                g: { type: 'number' },
+                b: { type: 'number' }
+              }
+            },
+            intensity: {
+              type: 'number',
+              description: 'Light intensity (default: 1.0)',
+              default: 1.0
+            },
+            range: {
+              type: 'number',
+              description: 'Light range for Point/Spot lights (default: 10)',
+              default: 10
+            },
+            spotAngle: {
+              type: 'number',
+              description: 'Spot angle for Spot lights (default: 30)',
+              default: 30
+            },
+            shadows: {
+              type: 'string',
+              description: 'Shadow type',
+              enum: ['None', 'Hard', 'Soft'],
+              default: 'Soft'
+            }
+          },
+          required: ['name', 'lightType'],
+        },
+      },
+      {
+        name: 'unity_set_layer',
+        description: 'Set the layer of a GameObject for rendering, physics, or raycasting control.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              description: 'Name/path of the GameObject',
+            },
+            layer: {
+              type: 'string',
+              description: 'Layer name or number (Default, TransparentFX, IgnoreRaycast, Water, UI, etc.)',
+            },
+            recursive: {
+              type: 'boolean',
+              description: 'Apply to all children (default: false)',
+              default: false
+            }
+          },
+          required: ['name', 'layer'],
+        },
+      },
+      {
+        name: 'unity_set_tag',
+        description: 'Set the tag of a GameObject for identification and searching.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              description: 'Name/path of the GameObject',
+            },
+            tag: {
+              type: 'string',
+              description: 'Tag name (Player, MainCamera, Respawn, Finish, EditorOnly, etc.)',
+            }
+          },
+          required: ['name', 'tag'],
+        },
+      },
+      {
+        name: 'unity_add_rigidbody',
+        description: 'Add Rigidbody component with physics properties. Essential for realistic physics simulation.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              description: 'Name/path of the GameObject',
+            },
+            mass: {
+              type: 'number',
+              description: 'Mass in kilograms (default: 1)',
+              default: 1
+            },
+            drag: {
+              type: 'number',
+              description: 'Air drag (default: 0)',
+              default: 0
+            },
+            angularDrag: {
+              type: 'number',
+              description: 'Angular drag (default: 0.05)',
+              default: 0.05
+            },
+            useGravity: {
+              type: 'boolean',
+              description: 'Use gravity (default: true)',
+              default: true
+            },
+            isKinematic: {
+              type: 'boolean',
+              description: 'Is kinematic (controlled by script, not physics) (default: false)',
+              default: false
+            },
+            constraints: {
+              type: 'object',
+              description: 'Freeze position/rotation axes',
+              properties: {
+                freezePositionX: { type: 'boolean', default: false },
+                freezePositionY: { type: 'boolean', default: false },
+                freezePositionZ: { type: 'boolean', default: false },
+                freezeRotationX: { type: 'boolean', default: false },
+                freezeRotationY: { type: 'boolean', default: false },
+                freezeRotationZ: { type: 'boolean', default: false }
+              }
+            }
+          },
+          required: ['name'],
+        },
+      },
+      {
+        name: 'unity_add_collider',
+        description: 'Add a collider component (Box, Sphere, Capsule, Mesh) with trigger option.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              description: 'Name/path of the GameObject',
+            },
+            colliderType: {
+              type: 'string',
+              description: 'Type of collider',
+              enum: ['Box', 'Sphere', 'Capsule', 'Mesh']
+            },
+            isTrigger: {
+              type: 'boolean',
+              description: 'Is this a trigger (non-physical) (default: false)',
+              default: false
+            },
+            center: {
+              type: 'object',
+              description: 'Collider center offset',
+              properties: {
+                x: { type: 'number', default: 0 },
+                y: { type: 'number', default: 0 },
+                z: { type: 'number', default: 0 }
+              }
+            },
+            size: {
+              type: 'object',
+              description: 'Size for Box collider',
+              properties: {
+                x: { type: 'number' },
+                y: { type: 'number' },
+                z: { type: 'number' }
+              }
+            },
+            radius: {
+              type: 'number',
+              description: 'Radius for Sphere/Capsule collider',
+            },
+            height: {
+              type: 'number',
+              description: 'Height for Capsule collider',
+            },
+            convex: {
+              type: 'boolean',
+              description: 'Is mesh collider convex (required for rigidbody) (default: false)',
+              default: false
+            }
+          },
+          required: ['name', 'colliderType'],
+        },
+      },
+      {
+        name: 'unity_get_bounds',
+        description: 'Get the bounding box of a GameObject (including all renderers). Useful for placement and collision detection.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              description: 'Name/path of the GameObject',
+            }
+          },
+          required: ['name'],
+        },
+      },
+      {
+        name: 'unity_raycast',
+        description: 'Perform a physics raycast to detect objects. Returns hit information including point, normal, and object name.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            origin: {
+              type: 'object',
+              description: 'Ray origin point',
+              properties: {
+                x: { type: 'number' },
+                y: { type: 'number' },
+                z: { type: 'number' }
+              },
+              required: ['x', 'y', 'z']
+            },
+            direction: {
+              type: 'object',
+              description: 'Ray direction (will be normalized)',
+              properties: {
+                x: { type: 'number' },
+                y: { type: 'number' },
+                z: { type: 'number' }
+              },
+              required: ['x', 'y', 'z']
+            },
+            maxDistance: {
+              type: 'number',
+              description: 'Maximum distance (default: 1000)',
+              default: 1000
+            },
+            layerMask: {
+              type: 'string',
+              description: 'Layer mask for filtering (optional)',
+            }
+          },
+          required: ['origin', 'direction'],
+        },
+      },
     ],
   };
 });
@@ -604,6 +1197,162 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           includeProps: args.includeProps,
           optimizeMeshes: args.optimizeMeshes,
           seed: args.seed
+        });
+        break;
+
+      case 'unity_set_rotation_quaternion':
+        result = await callUnity('/setRotationQuaternion', {
+          name: args.name,
+          quaternion: args.quaternion
+        });
+        break;
+
+      case 'unity_look_at':
+        result = await callUnity('/lookAt', {
+          name: args.name,
+          targetName: args.targetName,
+          targetPosition: args.targetPosition,
+          upVector: args.upVector || { x: 0, y: 1, z: 0 }
+        });
+        break;
+
+      case 'unity_align_to_surface':
+        result = await callUnity('/alignToSurface', {
+          name: args.name,
+          rayOrigin: args.rayOrigin,
+          rayDirection: args.rayDirection || { x: 0, y: -1, z: 0 },
+          maxDistance: args.maxDistance || 100,
+          offset: args.offset || 0
+        });
+        break;
+
+      case 'unity_set_local_transform':
+        result = await callUnity('/setLocalTransform', {
+          name: args.name,
+          localPosition: args.localPosition,
+          localRotation: args.localRotation,
+          localScale: args.localScale
+        });
+        break;
+
+      case 'unity_duplicate_object':
+        result = await callUnity('/duplicateObject', {
+          sourceName: args.sourceName,
+          newName: args.newName,
+          offset: args.offset,
+          parent: args.parent
+        });
+        break;
+
+      case 'unity_create_linear_array':
+        result = await callUnity('/createLinearArray', {
+          sourceName: args.sourceName,
+          count: args.count,
+          spacing: args.spacing,
+          namePrefix: args.namePrefix,
+          parent: args.parent
+        });
+        break;
+
+      case 'unity_create_circular_array':
+        result = await callUnity('/createCircularArray', {
+          sourceName: args.sourceName,
+          count: args.count,
+          radius: args.radius,
+          center: args.center,
+          rotateToCenter: args.rotateToCenter !== false,
+          namePrefix: args.namePrefix,
+          parent: args.parent
+        });
+        break;
+
+      case 'unity_create_grid_array':
+        result = await callUnity('/createGridArray', {
+          sourceName: args.sourceName,
+          countX: args.countX,
+          countY: args.countY,
+          countZ: args.countZ,
+          spacingX: args.spacingX,
+          spacingY: args.spacingY,
+          spacingZ: args.spacingZ,
+          namePrefix: args.namePrefix,
+          parent: args.parent
+        });
+        break;
+
+      case 'unity_snap_to_grid':
+        result = await callUnity('/snapToGrid', {
+          name: args.name,
+          gridSize: args.gridSize
+        });
+        break;
+
+      case 'unity_create_light':
+        result = await callUnity('/createLight', {
+          name: args.name,
+          lightType: args.lightType,
+          position: args.position,
+          rotation: args.rotation,
+          color: args.color,
+          intensity: args.intensity,
+          range: args.range,
+          spotAngle: args.spotAngle,
+          shadows: args.shadows || 'Soft'
+        });
+        break;
+
+      case 'unity_set_layer':
+        result = await callUnity('/setLayer', {
+          name: args.name,
+          layer: args.layer,
+          recursive: args.recursive || false
+        });
+        break;
+
+      case 'unity_set_tag':
+        result = await callUnity('/setTag', {
+          name: args.name,
+          tag: args.tag
+        });
+        break;
+
+      case 'unity_add_rigidbody':
+        result = await callUnity('/addRigidbody', {
+          name: args.name,
+          mass: args.mass || 1,
+          drag: args.drag || 0,
+          angularDrag: args.angularDrag || 0.05,
+          useGravity: args.useGravity !== false,
+          isKinematic: args.isKinematic || false,
+          constraints: args.constraints
+        });
+        break;
+
+      case 'unity_add_collider':
+        result = await callUnity('/addCollider', {
+          name: args.name,
+          colliderType: args.colliderType,
+          isTrigger: args.isTrigger || false,
+          center: args.center,
+          size: args.size,
+          radius: args.radius,
+          height: args.height,
+          convex: args.convex || false
+        });
+        break;
+
+      case 'unity_get_bounds':
+        result = await callUnity('/getBounds', {
+          name: args.name
+        });
+        break;
+
+      case 'unity_raycast':
+        result = await callUnity('/raycast', {
+          origin: args.origin,
+          direction: args.direction,
+          maxDistance: args.maxDistance || 1000,
+          layerMask: args.layerMask
         });
         break;
 
