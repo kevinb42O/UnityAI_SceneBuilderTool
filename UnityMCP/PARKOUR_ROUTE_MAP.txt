@@ -1,0 +1,305 @@
+================================================================================
+  ULTIMATE WORLD - PARKOUR COURSE MAP (Top-Down + Side View)
+================================================================================
+
+TOP-DOWN VIEW (Bird's Eye - Y axis looking down)
+Scale: Each character = ~25 units
+
+                    N (North Portal @ 0,250)
+                    │
+            ╔═══════╪═══════╗
+            ║   🌲  Portal   🌲   ║    Legend:
+    NW      ║  Pine Forest  ║      NE        🏰 = Castle (Start)
+  Portal    ║               ║    Portal      🗼 = Sci-Fi Towers
+  @ -250,0  ║               ║    @ 250,0     ⛪ = Cathedral
+            ║               ║                🏝️ = Floating Islands
+            ║  🏝️          🏝️  ║              🌳 = Forest Groves
+    🗼═══════╬═══╗   🗼   ╔═══╬═══════🗼       ═══ = Roads
+    West     ║   ║   │   ║   ║     East       ─── = Platforms
+    Tower    ║   ║   │   ║   ║     Tower      ┊┊┊ = Aerial Path
+  -200,0     ║   ╚═══⛪═══╝   ║     200,0      
+            ║      /│\      ║                ⚑ = Start Marker
+            ║     / │ \     ║                ⚐ = Finish Marker
+            ║    🌉─┤─🌉    ║                
+            ║      🏰│      ║                
+            ║     ⚑││      ║                
+            ║   ════│════   ║                
+            ║  Birch│Oak   ║                
+            ║  Grove│Grove  ║                
+            ║               ║                
+            ║  🏝️  │   🌳   ║                
+            ║      │Willow  ║                
+            ╚══════╪════════╝                
+                   │                         
+                   S (South Portal @ 0,-250) 
+
+Floating Islands (3D positions):
+  Island 0 (NE): 🏝️ @ (150, 80, 150)  ← Trees added! 🌲🌲🌲🌲
+  Island 1 (NW): 🏝️ @ (-150, 90, 150) ← Trees added! 🌲🌲🌲🌲🌲
+  Island 2 (SE): 🏝️ @ (150, 85, -150) ← Trees added! 🌲🌲🌲🌲
+
+
+SIDE VIEW - EAST (Looking West, showing height profile)
+
+Height
+(m)
+ 90│                    🏝️────────🏝️ Island 1 (NW)
+    │                   /│\        /│\
+ 85│                  /  │  \    /  │  \ 🏝️ Island 2 (SE)
+    │                /    │    \/    │    \
+ 80│              /      │   🏝️      │      \ Island 0 (NE)
+    │            /        │ /   \    │        \
+ 75│          /          │/      \   │          \
+    │        /          ⛪          \│            \
+ 70│      /          /  │  \        │              \⚐
+    │    /          /    │    \      │            / Finish
+ 65│  /          /      │      \    │          /   Platform
+    │/          /        │        \  │        /
+ 60│         /          │          \│      🗼 Tower
+    │       /            │          /│    /   Spiral
+ 55│     /              │        /  │  /     Platforms
+    │   /                │      /    │/
+ 50│ /                  🌉    /    /│
+    │                   / │  /   /  │
+ 45│                  /   │/  /    │
+    │                /    🌉/      │
+ 40│              /    / │ \      │
+    │            /    /   │   \    │
+ 35│          /    /     │     \  │
+    │        /    /      🏰      \│
+ 30│      /    /      /  │  \    │
+    │    /    /      /    │    \  │
+ 25│  /    /      /      │      \│
+    │/    /      /        │       │
+ 20│   /      /          │       │
+    │ /      /            │       │
+ 15│/      /              │       │
+    │     /                │       │
+ 10│   /                  │       │
+    │ /                    │       │
+  5│/                     ⚑       │
+    │                      │       │
+  0├──────────────────────┴───────┴─────────────
+    │<─────── ~250 units ──────>│<─── 200 ───>│
+  Origin                     Castle        Towers
+
+
+PARKOUR ROUTE FLOW (Numbered sequence):
+
+START ⚑ Castle Courtyard (0, 6, 0)
+  │
+  ├─[1]─> Ground Roads (explore 4 portals) ═══════════════════╗
+  │                                                             ║
+  └─[2]─> Castle Roof Platforms ─────────────────╗            ║
+         (5 platforms ascending)                  ↓            ║
+            │                                  [Optional       ║
+            ↓                                   Return]        ║
+         [3] Bridge Platforms ──────────────────────────────╗  ║
+            (4 platforms to cathedral)                      ↓  ↓
+            │                                           Roads meet
+            ↓                                           at portals
+         [4] Cathedral ⛪                                      
+            (reached at 70m height)                           
+            │                                                  
+            ├─[5a]─> Island 0 Route (8 platforms) ┄┄┄> 🏝️     
+            ├─[5b]─> Island 1 Route (8 platforms) ┄┄┄> 🏝️     
+            └─[5c]─> Island 2 Route (8 platforms) ┄┄┄> 🏝️     
+                                                    │ │ │      
+                              [Explore trees] ←────┘ │ │      
+                                                      │ │      
+                     [6] Inter-Island Bridges ───────┴─┘      
+                         (connect all 3 islands)               
+                                │                              
+                     ┌──────────┴──────────┐                  
+                     ↓                      ↓                  
+            [7a] Island→East Tower   [7b] Island→West Tower  
+                 (12 spiral down)         (12 spiral down)    
+                     │                      │                  
+                     ↓                      ↓                  
+            [8a] East Tower Spiral   [8b] West Tower Spiral  
+                 (8 platforms up)         (8 platforms up)    
+                     │                      │                  
+                     ↓                      ↓                  
+                   🗼 Top                  🗼 Top              
+                     │                      
+                     └──> [9] Jump to Finish Platform        
+                                │                              
+                                ↓                              
+                         FINISH ⚐ (200, 72, 0)                
+
+
+CHECKPOINT LOCATIONS (20+ markers):
+
+Ground Level (Cyan Markers):
+  ✦ (0, 2.5, 50)    - North Road checkpoint 1
+  ✦ (0, 2.5, 100)   - North Road checkpoint 2
+  ✦ (0, 2.5, 150)   - North Road checkpoint 3
+  ✦ (0, 2.5, 200)   - North Road checkpoint 4
+  ... (16 total on 4 roads)
+
+Platform Level (Orange Markers):
+  ✦ (Various) - Every other aerial platform
+  ✦ Total: 12 checkpoint spheres on island routes
+
+Beacons:
+  ⚑ (0, 20, 0)      - Start beacon (green, 40m tall)
+  ⚐ (200, 85, 0)    - Finish beacon (gold, 30m tall)
+
+
+DIFFICULTY HEATMAP (⭐ = difficulty):
+
+  Portal      Portal      Portal      Portal
+   (N)         (E)         (S)         (W)
+    ⭐          ⭐          ⭐          ⭐     Ground Roads
+    │          │          │          │
+    └──────────┴──────────┴──────────┘
+               │
+           ⭐⭐ Castle Platforms
+               │
+           ⭐⭐ Bridge
+               │
+           ⭐⭐⭐ Cathedral Platforms
+               │
+    ┌──────────┼──────────┐
+    │          │          │
+⭐⭐⭐⭐    ⭐⭐⭐⭐    ⭐⭐⭐⭐  Island Routes
+    │          │          │
+  🏝️(1)      🏝️(0)      🏝️(2)
+    │          │          │
+    └─⭐⭐⭐⭐⭐─┴─⭐⭐⭐⭐⭐─┘    Inter-Island Bridges
+               │
+    ┌──────────┴──────────┐
+    │                     │
+⭐⭐⭐⭐              ⭐⭐⭐⭐   Tower Descents
+    │                     │
+⭐⭐⭐⭐⭐            ⭐⭐⭐⭐⭐  Tower Spirals
+    │                     │
+   🗼(W)                 🗼(E)
+                          │
+                          ⚐  FINISH
+
+
+OBJECT COUNT BY SECTION:
+
+Section                    Objects    % of Total
+───────────────────────────────────────────────
+Ground Roads                  80         32%
+Island Trees                  28         11%
+Castle→Cathedral              19          8%
+Island Stepping Stones        36         14%
+Inter-Island Bridges          20          8%
+Island→Tower Spirals          24         10%
+Tower Spiral Platforms        16          6%
+Start/Finish Markers           4          2%
+Guide Arrows                   5          2%
+Checkpoints (embedded)        18          7%
+───────────────────────────────────────────────
+TOTAL PARKOUR                250        100%
+
+
+WORLD OVERVIEW (All Elements):
+
+Total Objects: ~570
+├─ Original World: 320
+│  ├─ Castle: 35
+│  ├─ Cathedral: 22
+│  ├─ Bridge: 21
+│  ├─ Towers: 18
+│  ├─ Portals: 20
+│  ├─ Forests: 120
+│  ├─ Islands: 12 (base + crystals)
+│  └─ Ambient: 50
+│
+└─ Parkour System: 250
+   ├─ Roads: 80
+   ├─ Trees: 28
+   ├─ Platforms: 115
+   ├─ Bridges: 20
+   └─ Markers: 27
+
+
+RECOMMENDED ROUTES:
+
+╔════════════════════════════════════════════════════════════════╗
+║  BEGINNER ROUTE (5 min)                                        ║
+╠════════════════════════════════════════════════════════════════╣
+║  Start → North Road → Castle Platforms → Bridge →             ║
+║  Cathedral → Island 0 Route → Explore Island →                ║
+║  East Tower Descent → Tower Spiral → Finish                   ║
+║                                                                 ║
+║  Difficulty: ⭐⭐⭐ Medium                                      ║
+║  Platforms: ~80                                                ║
+╚════════════════════════════════════════════════════════════════╝
+
+╔════════════════════════════════════════════════════════════════╗
+║  SPEED RUN ROUTE (2.5 min)                                     ║
+╠════════════════════════════════════════════════════════════════╣
+║  Start → Skip to Castle Roof (jump from wall) →               ║
+║  Bridge (skip 2 platforms) → Cathedral (direct jump) →        ║
+║  Island 0 (skip stones, direct jump) →                        ║
+║  East Tower (straight descent, skip spiral) →                 ║
+║  Tower Sprint (skip even platforms) → Finish                  ║
+║                                                                 ║
+║  Difficulty: ⭐⭐⭐⭐⭐ Master                                  ║
+║  Platforms: ~35 (skips 65%)                                    ║
+╚════════════════════════════════════════════════════════════════╝
+
+╔════════════════════════════════════════════════════════════════╗
+║  COMPLETIONIST ROUTE (8 min)                                   ║
+╠════════════════════════════════════════════════════════════════╣
+║  Start → All 4 Portal Roads → Castle → Bridge → Cathedral → ║
+║  All 3 Island Routes → Visit All Islands + Trees →           ║
+║  Both Inter-Island Bridges → Both Tower Descents →           ║
+║  West Tower Spiral (explore) → East Tower Spiral → Finish    ║
+║                                                                 ║
+║  Difficulty: ⭐⭐⭐⭐ Hard                                      ║
+║  Platforms: 250 (100%)                                         ║
+╚════════════════════════════════════════════════════════════════╝
+
+
+ELEVATION PROFILE (Distance vs Height):
+
+ 90m │                    ╱‾‾╲          ╱‾‾╲
+     │                  ╱      ╲      ╱      ╲
+ 80m │                ╱          ╲  ╱          ╲
+     │              ╱              ╲╱            ╲
+ 70m │            ╱               ╱‾╲             ╲
+     │          ╱              ╱‾    ‾╲            ╲
+ 60m │        ╱             ╱‾         ‾╲           ╲╱‾╲
+     │      ╱            ╱‾               ╲        ╱    ╲
+ 50m │    ╱           ╱‾                   ╲     ╱       ╲
+     │  ╱          ╱‾                        ╲  ╱          ╲
+ 40m │╱         ╱‾                            ╲╱            ╲
+     │       ╱‾                                              ╲
+ 30m │    ╱‾                                                  ╲
+     │  ╱                                                      ╲
+ 20m │╱                                                         ╲
+     │                                                           ╲
+ 10m │                                                            ╲
+     │                                                             ╲
+  0m └────────────────────────────────────────────────────────────┴─
+     Start  Roads Castle Bridge Cath. Islands Bridges Towers Finish
+           100    200   300   400    500      600     700    800
+
+     │<─────────────── Distance (units) ─────────────────────>│
+
+
+TIMESTAMPS (Estimated for average player):
+
+00:00 - Start at castle courtyard
+00:30 - Reach first portal via north road
+01:00 - Return to castle, climb to roof
+01:30 - Cross tower bridge
+02:00 - Reach cathedral platform
+02:30 - Halfway to Island 0
+03:00 - Land on Island 0, explore trees
+03:30 - Cross to Island 1 via bridge
+04:00 - Descend from island to tower
+04:30 - Begin tower spiral ascent
+05:00 - Reach finish platform! 🎉
+
+
+================================================================================
+  Course designed for progressive skill development and maximum fun!
+  All elements preserve original world - parkour is fully optional.
+================================================================================
