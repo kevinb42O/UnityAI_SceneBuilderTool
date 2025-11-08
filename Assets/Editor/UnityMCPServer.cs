@@ -192,6 +192,38 @@ namespace UnityMCP
                     return QueryScene(json);
                 case "/generateWorld":
                     return GenerateWorld(json);
+                case "/setRotationQuaternion":
+                    return SetRotationQuaternion(json);
+                case "/lookAt":
+                    return LookAt(json);
+                case "/alignToSurface":
+                    return AlignToSurface(json);
+                case "/setLocalTransform":
+                    return SetLocalTransform(json);
+                case "/duplicateObject":
+                    return DuplicateObject(json);
+                case "/createLinearArray":
+                    return CreateLinearArray(json);
+                case "/createCircularArray":
+                    return CreateCircularArray(json);
+                case "/createGridArray":
+                    return CreateGridArray(json);
+                case "/snapToGrid":
+                    return SnapToGrid(json);
+                case "/createLight":
+                    return CreateLight(json);
+                case "/setLayer":
+                    return SetLayer(json);
+                case "/setTag":
+                    return SetTag(json);
+                case "/addRigidbody":
+                    return AddRigidbody(json);
+                case "/addCollider":
+                    return AddCollider(json);
+                case "/getBounds":
+                    return GetBounds(json);
+                case "/raycast":
+                    return Raycast(json);
                 case "/ping":
                     return "{\"status\": \"ok\"}";
                 default:
@@ -1000,6 +1032,16 @@ namespace UnityMCP
             return dict.ContainsKey(key) ? (bool)dict[key] : defaultValue;
         }
 
+        private static int GetInt(Dictionary<string, object> dict, string key, int defaultValue)
+        {
+            if (!dict.ContainsKey(key)) return defaultValue;
+            var val = dict[key];
+            if (val is int) return (int)val;
+            if (val is float) return (int)(float)val;
+            if (val is double) return (int)(double)val;
+            return int.Parse(val.ToString());
+        }
+
         private static object ConvertValue(object value, Type targetType)
         {
             if (value == null) return null;
@@ -1094,6 +1136,719 @@ namespace UnityMCP
             {
                 return $"{{\"success\": false, \"error\": \"{EscapeJson(e.Message)}\"}}";
             }
+        }
+
+        // ============================================================
+        // ADVANCED ROTATION & POSITIONING SYSTEM
+        // ============================================================
+
+        private static string SetRotationQuaternion(Dictionary<string, object> json)
+        {
+            string name = GetString(json, "name", "");
+            GameObject go = GameObject.Find(name);
+            if (go == null)
+                throw new Exception($"GameObject not found: {name}");
+
+            if (!json.ContainsKey("quaternion"))
+                throw new Exception("quaternion parameter required");
+
+            var qDict = (Dictionary<string, object>)json["quaternion"];
+            float x = GetFloat(qDict, "x", 0);
+            float y = GetFloat(qDict, "y", 0);
+            float z = GetFloat(qDict, "z", 0);
+            float w = GetFloat(qDict, "w", 1);
+
+            Undo.RecordObject(go.transform, "Set Rotation Quaternion");
+            go.transform.rotation = new Quaternion(x, y, z, w);
+
+            return "{\"success\": true}";
+        }
+
+        private static string LookAt(Dictionary<string, object> json)
+        {
+            string name = GetString(json, "name", "");
+            GameObject go = GameObject.Find(name);
+            if (go == null)
+                throw new Exception($"GameObject not found: {name}");
+
+            Vector3 targetPos;
+            
+            // Check for target GameObject
+            if (json.ContainsKey("targetName") && !string.IsNullOrEmpty(GetString(json, "targetName", "")))
+            {
+                string targetName = GetString(json, "targetName", "");
+                GameObject target = GameObject.Find(targetName);
+                if (target == null)
+                    throw new Exception($"Target GameObject not found: {targetName}");
+                targetPos = target.transform.position;
+            }
+            // Check for target position
+            else if (json.ContainsKey("targetPosition"))
+            {
+                var posDict = (Dictionary<string, object>)json["targetPosition"];
+                targetPos = new Vector3(
+                    GetFloat(posDict, "x", 0),
+                    GetFloat(posDict, "y", 0),
+                    GetFloat(posDict, "z", 0)
+                );
+            }
+            else
+            {
+                throw new Exception("Either targetName or targetPosition must be provided");
+            }
+
+            Vector3 upVector = Vector3.up;
+            if (json.ContainsKey("upVector"))
+            {
+                var upDict = (Dictionary<string, object>)json["upVector"];
+                upVector = new Vector3(
+                    GetFloat(upDict, "x", 0),
+                    GetFloat(upDict, "y", 1),
+                    GetFloat(upDict, "z", 0)
+                );
+            }
+
+            Undo.RecordObject(go.transform, "Look At");
+            go.transform.LookAt(targetPos, upVector);
+
+            return "{\"success\": true}";
+        }
+
+        private static string AlignToSurface(Dictionary<string, object> json)
+        {
+            string name = GetString(json, "name", "");
+            GameObject go = GameObject.Find(name);
+            if (go == null)
+                throw new Exception($"GameObject not found: {name}");
+
+            if (!json.ContainsKey("rayOrigin"))
+                throw new Exception("rayOrigin parameter required");
+
+            var originDict = (Dictionary<string, object>)json["rayOrigin"];
+            Vector3 origin = new Vector3(
+                GetFloat(originDict, "x", 0),
+                GetFloat(originDict, "y", 0),
+                GetFloat(originDict, "z", 0)
+            );
+
+            Vector3 direction = Vector3.down;
+            if (json.ContainsKey("rayDirection"))
+            {
+                var dirDict = (Dictionary<string, object>)json["rayDirection"];
+                direction = new Vector3(
+                    GetFloat(dirDict, "x", 0),
+                    GetFloat(dirDict, "y", -1),
+                    GetFloat(dirDict, "z", 0)
+                ).normalized;
+            }
+
+            float maxDistance = GetFloat(json, "maxDistance", 100f);
+            float offset = GetFloat(json, "offset", 0f);
+
+            RaycastHit hit;
+            if (Physics.Raycast(origin, direction, out hit, maxDistance))
+            {
+                Undo.RecordObject(go.transform, "Align To Surface");
+                go.transform.position = hit.point + hit.normal * offset;
+                go.transform.up = hit.normal;
+
+                return $"{{\"success\": true, \"hitPoint\": {{\"x\": {hit.point.x}, \"y\": {hit.point.y}, \"z\": {hit.point.z}}}, \"hitNormal\": {{\"x\": {hit.normal.x}, \"y\": {hit.normal.y}, \"z\": {hit.normal.z}}}}}";
+            }
+
+            return "{\"success\": false, \"error\": \"No surface hit\"}";
+        }
+
+        private static string SetLocalTransform(Dictionary<string, object> json)
+        {
+            string name = GetString(json, "name", "");
+            GameObject go = GameObject.Find(name);
+            if (go == null)
+                throw new Exception($"GameObject not found: {name}");
+
+            Undo.RecordObject(go.transform, "Set Local Transform");
+
+            if (json.ContainsKey("localPosition"))
+            {
+                var pos = (Dictionary<string, object>)json["localPosition"];
+                go.transform.localPosition = new Vector3(
+                    GetFloat(pos, "x", 0),
+                    GetFloat(pos, "y", 0),
+                    GetFloat(pos, "z", 0)
+                );
+            }
+
+            if (json.ContainsKey("localRotation"))
+            {
+                var rot = (Dictionary<string, object>)json["localRotation"];
+                go.transform.localRotation = Quaternion.Euler(
+                    GetFloat(rot, "x", 0),
+                    GetFloat(rot, "y", 0),
+                    GetFloat(rot, "z", 0)
+                );
+            }
+
+            if (json.ContainsKey("localScale"))
+            {
+                var scale = (Dictionary<string, object>)json["localScale"];
+                go.transform.localScale = new Vector3(
+                    GetFloat(scale, "x", 1),
+                    GetFloat(scale, "y", 1),
+                    GetFloat(scale, "z", 1)
+                );
+            }
+
+            return "{\"success\": true}";
+        }
+
+        // ============================================================
+        // OBJECT DUPLICATION & ARRAY SYSTEM
+        // ============================================================
+
+        private static string DuplicateObject(Dictionary<string, object> json)
+        {
+            string sourceName = GetString(json, "sourceName", "");
+            string newName = GetString(json, "newName", "");
+            
+            GameObject source = GameObject.Find(sourceName);
+            if (source == null)
+                throw new Exception($"Source GameObject not found: {sourceName}");
+
+            GameObject duplicate = Object.Instantiate(source);
+            duplicate.name = newName;
+
+            if (json.ContainsKey("offset"))
+            {
+                var offsetDict = (Dictionary<string, object>)json["offset"];
+                Vector3 offset = new Vector3(
+                    GetFloat(offsetDict, "x", 0),
+                    GetFloat(offsetDict, "y", 0),
+                    GetFloat(offsetDict, "z", 0)
+                );
+                duplicate.transform.position = source.transform.position + offset;
+            }
+
+            if (json.ContainsKey("parent") && !string.IsNullOrEmpty(GetString(json, "parent", "")))
+            {
+                GameObject parent = GameObject.Find(GetString(json, "parent", ""));
+                if (parent != null)
+                    duplicate.transform.SetParent(parent.transform);
+            }
+
+            Undo.RegisterCreatedObjectUndo(duplicate, "Duplicate Object");
+
+            return $"{{\"success\": true, \"name\": \"{EscapeJson(duplicate.name)}\", \"instanceId\": {duplicate.GetInstanceID()}}}";
+        }
+
+        private static string CreateLinearArray(Dictionary<string, object> json)
+        {
+            string sourceName = GetString(json, "sourceName", "");
+            int count = GetInt(json, "count", 1);
+            string namePrefix = GetString(json, "namePrefix", sourceName);
+            
+            GameObject source = GameObject.Find(sourceName);
+            if (source == null)
+                throw new Exception($"Source GameObject not found: {sourceName}");
+
+            if (!json.ContainsKey("spacing"))
+                throw new Exception("spacing parameter required");
+
+            var spacingDict = (Dictionary<string, object>)json["spacing"];
+            Vector3 spacing = new Vector3(
+                GetFloat(spacingDict, "x", 0),
+                GetFloat(spacingDict, "y", 0),
+                GetFloat(spacingDict, "z", 0)
+            );
+
+            GameObject parent = null;
+            if (json.ContainsKey("parent") && !string.IsNullOrEmpty(GetString(json, "parent", "")))
+            {
+                parent = GameObject.Find(GetString(json, "parent", ""));
+            }
+
+            var createdObjects = new List<string>();
+            for (int i = 0; i < count; i++)
+            {
+                GameObject duplicate = Object.Instantiate(source);
+                duplicate.name = $"{namePrefix}_{i}";
+                duplicate.transform.position = source.transform.position + spacing * i;
+                
+                if (parent != null)
+                    duplicate.transform.SetParent(parent.transform);
+
+                Undo.RegisterCreatedObjectUndo(duplicate, "Create Linear Array");
+                createdObjects.Add(duplicate.name);
+            }
+
+            return $"{{\"success\": true, \"count\": {count}, \"objects\": [" + 
+                   string.Join(", ", createdObjects.ConvertAll(n => $"\"{EscapeJson(n)}\"")) + "]}}";
+        }
+
+        private static string CreateCircularArray(Dictionary<string, object> json)
+        {
+            string sourceName = GetString(json, "sourceName", "");
+            int count = GetInt(json, "count", 3);
+            float radius = GetFloat(json, "radius", 10f);
+            bool rotateToCenter = GetBool(json, "rotateToCenter", true);
+            string namePrefix = GetString(json, "namePrefix", sourceName);
+            
+            GameObject source = GameObject.Find(sourceName);
+            if (source == null)
+                throw new Exception($"Source GameObject not found: {sourceName}");
+
+            if (!json.ContainsKey("center"))
+                throw new Exception("center parameter required");
+
+            var centerDict = (Dictionary<string, object>)json["center"];
+            Vector3 center = new Vector3(
+                GetFloat(centerDict, "x", 0),
+                GetFloat(centerDict, "y", 0),
+                GetFloat(centerDict, "z", 0)
+            );
+
+            GameObject parent = null;
+            if (json.ContainsKey("parent") && !string.IsNullOrEmpty(GetString(json, "parent", "")))
+            {
+                parent = GameObject.Find(GetString(json, "parent", ""));
+            }
+
+            var createdObjects = new List<string>();
+            float angleStep = 360f / count;
+
+            for (int i = 0; i < count; i++)
+            {
+                GameObject duplicate = Object.Instantiate(source);
+                duplicate.name = $"{namePrefix}_{i}";
+                
+                float angle = i * angleStep * Mathf.Deg2Rad;
+                Vector3 offset = new Vector3(
+                    Mathf.Cos(angle) * radius,
+                    0,
+                    Mathf.Sin(angle) * radius
+                );
+                duplicate.transform.position = center + offset;
+                
+                if (rotateToCenter)
+                {
+                    duplicate.transform.LookAt(center);
+                }
+
+                if (parent != null)
+                    duplicate.transform.SetParent(parent.transform);
+
+                Undo.RegisterCreatedObjectUndo(duplicate, "Create Circular Array");
+                createdObjects.Add(duplicate.name);
+            }
+
+            return $"{{\"success\": true, \"count\": {count}, \"objects\": [" + 
+                   string.Join(", ", createdObjects.ConvertAll(n => $"\"{EscapeJson(n)}\"")) + "]}}";
+        }
+
+        private static string CreateGridArray(Dictionary<string, object> json)
+        {
+            string sourceName = GetString(json, "sourceName", "");
+            int countX = GetInt(json, "countX", 1);
+            int countY = GetInt(json, "countY", 1);
+            int countZ = GetInt(json, "countZ", 1);
+            float spacingX = GetFloat(json, "spacingX", 1f);
+            float spacingY = GetFloat(json, "spacingY", 1f);
+            float spacingZ = GetFloat(json, "spacingZ", 1f);
+            string namePrefix = GetString(json, "namePrefix", sourceName);
+            
+            GameObject source = GameObject.Find(sourceName);
+            if (source == null)
+                throw new Exception($"Source GameObject not found: {sourceName}");
+
+            GameObject parent = null;
+            if (json.ContainsKey("parent") && !string.IsNullOrEmpty(GetString(json, "parent", "")))
+            {
+                parent = GameObject.Find(GetString(json, "parent", ""));
+            }
+
+            var createdObjects = new List<string>();
+            int totalCount = 0;
+
+            for (int x = 0; x < countX; x++)
+            {
+                for (int y = 0; y < countY; y++)
+                {
+                    for (int z = 0; z < countZ; z++)
+                    {
+                        // Skip the first one if it's at 0,0,0 (original position)
+                        if (x == 0 && y == 0 && z == 0) continue;
+
+                        GameObject duplicate = Object.Instantiate(source);
+                        duplicate.name = $"{namePrefix}_{x}_{y}_{z}";
+                        duplicate.transform.position = source.transform.position + new Vector3(
+                            x * spacingX,
+                            y * spacingY,
+                            z * spacingZ
+                        );
+                        
+                        if (parent != null)
+                            duplicate.transform.SetParent(parent.transform);
+
+                        Undo.RegisterCreatedObjectUndo(duplicate, "Create Grid Array");
+                        createdObjects.Add(duplicate.name);
+                        totalCount++;
+                    }
+                }
+            }
+
+            return $"{{\"success\": true, \"count\": {totalCount}, \"objects\": [" + 
+                   string.Join(", ", createdObjects.ConvertAll(n => $"\"{EscapeJson(n)}\"")) + "]}}";
+        }
+
+        private static string SnapToGrid(Dictionary<string, object> json)
+        {
+            string name = GetString(json, "name", "");
+            float gridSize = GetFloat(json, "gridSize", 1f);
+            
+            GameObject go = GameObject.Find(name);
+            if (go == null)
+                throw new Exception($"GameObject not found: {name}");
+
+            Undo.RecordObject(go.transform, "Snap To Grid");
+
+            Vector3 pos = go.transform.position;
+            pos.x = Mathf.Round(pos.x / gridSize) * gridSize;
+            pos.y = Mathf.Round(pos.y / gridSize) * gridSize;
+            pos.z = Mathf.Round(pos.z / gridSize) * gridSize;
+            go.transform.position = pos;
+
+            return $"{{\"success\": true, \"position\": {{\"x\": {pos.x}, \"y\": {pos.y}, \"z\": {pos.z}}}}}";
+        }
+
+        // ============================================================
+        // LIGHTING SYSTEM
+        // ============================================================
+
+        private static string CreateLight(Dictionary<string, object> json)
+        {
+            string name = GetString(json, "name", "Light");
+            string lightTypeStr = GetString(json, "lightType", "Point");
+            
+            LightType lightType;
+            switch (lightTypeStr)
+            {
+                case "Directional": lightType = LightType.Directional; break;
+                case "Point": lightType = LightType.Point; break;
+                case "Spot": lightType = LightType.Spot; break;
+                case "Area": lightType = LightType.Area; break;
+                default: throw new Exception($"Unknown light type: {lightTypeStr}");
+            }
+
+            GameObject lightGO = new GameObject(name);
+            Light light = lightGO.AddComponent<Light>();
+            light.type = lightType;
+
+            if (json.ContainsKey("position"))
+            {
+                var posDict = (Dictionary<string, object>)json["position"];
+                lightGO.transform.position = new Vector3(
+                    GetFloat(posDict, "x", 0),
+                    GetFloat(posDict, "y", 0),
+                    GetFloat(posDict, "z", 0)
+                );
+            }
+
+            if (json.ContainsKey("rotation"))
+            {
+                var rotDict = (Dictionary<string, object>)json["rotation"];
+                lightGO.transform.rotation = Quaternion.Euler(
+                    GetFloat(rotDict, "x", 0),
+                    GetFloat(rotDict, "y", 0),
+                    GetFloat(rotDict, "z", 0)
+                );
+            }
+
+            if (json.ContainsKey("color"))
+            {
+                var colorDict = (Dictionary<string, object>)json["color"];
+                light.color = new Color(
+                    GetFloat(colorDict, "r", 1),
+                    GetFloat(colorDict, "g", 1),
+                    GetFloat(colorDict, "b", 1)
+                );
+            }
+
+            light.intensity = GetFloat(json, "intensity", 1f);
+            light.range = GetFloat(json, "range", 10f);
+            light.spotAngle = GetFloat(json, "spotAngle", 30f);
+
+            string shadowsStr = GetString(json, "shadows", "Soft");
+            switch (shadowsStr)
+            {
+                case "None": light.shadows = LightShadows.None; break;
+                case "Hard": light.shadows = LightShadows.Hard; break;
+                case "Soft": light.shadows = LightShadows.Soft; break;
+            }
+
+            Undo.RegisterCreatedObjectUndo(lightGO, "Create Light");
+
+            return $"{{\"success\": true, \"name\": \"{EscapeJson(lightGO.name)}\", \"type\": \"{lightTypeStr}\"}}";
+        }
+
+        // ============================================================
+        // LAYER & TAG SYSTEM
+        // ============================================================
+
+        private static string SetLayer(Dictionary<string, object> json)
+        {
+            string name = GetString(json, "name", "");
+            string layerStr = GetString(json, "layer", "Default");
+            bool recursive = GetBool(json, "recursive", false);
+            
+            GameObject go = GameObject.Find(name);
+            if (go == null)
+                throw new Exception($"GameObject not found: {name}");
+
+            int layer;
+            if (int.TryParse(layerStr, out layer))
+            {
+                // Layer provided as number
+            }
+            else
+            {
+                // Layer provided as name
+                layer = LayerMask.NameToLayer(layerStr);
+                if (layer == -1)
+                    throw new Exception($"Layer not found: {layerStr}");
+            }
+
+            Undo.RecordObject(go, "Set Layer");
+            
+            if (recursive)
+            {
+                foreach (Transform child in go.GetComponentsInChildren<Transform>(true))
+                {
+                    Undo.RecordObject(child.gameObject, "Set Layer");
+                    child.gameObject.layer = layer;
+                }
+            }
+            else
+            {
+                go.layer = layer;
+            }
+
+            return "{\"success\": true}";
+        }
+
+        private static string SetTag(Dictionary<string, object> json)
+        {
+            string name = GetString(json, "name", "");
+            string tag = GetString(json, "tag", "Untagged");
+            
+            GameObject go = GameObject.Find(name);
+            if (go == null)
+                throw new Exception($"GameObject not found: {name}");
+
+            Undo.RecordObject(go, "Set Tag");
+            go.tag = tag;
+
+            return "{\"success\": true}";
+        }
+
+        // ============================================================
+        // PHYSICS SYSTEM
+        // ============================================================
+
+        private static string AddRigidbody(Dictionary<string, object> json)
+        {
+            string name = GetString(json, "name", "");
+            GameObject go = GameObject.Find(name);
+            if (go == null)
+                throw new Exception($"GameObject not found: {name}");
+
+            Rigidbody rb = go.GetComponent<Rigidbody>();
+            if (rb == null)
+            {
+                rb = go.AddComponent<Rigidbody>();
+                Undo.RegisterCreatedObjectUndo(rb, "Add Rigidbody");
+            }
+
+            Undo.RecordObject(rb, "Configure Rigidbody");
+
+            rb.mass = GetFloat(json, "mass", 1f);
+            rb.drag = GetFloat(json, "drag", 0f);
+            rb.angularDrag = GetFloat(json, "angularDrag", 0.05f);
+            rb.useGravity = GetBool(json, "useGravity", true);
+            rb.isKinematic = GetBool(json, "isKinematic", false);
+
+            if (json.ContainsKey("constraints"))
+            {
+                var constraintsDict = (Dictionary<string, object>)json["constraints"];
+                RigidbodyConstraints constraints = RigidbodyConstraints.None;
+                
+                if (GetBool(constraintsDict, "freezePositionX", false)) constraints |= RigidbodyConstraints.FreezePositionX;
+                if (GetBool(constraintsDict, "freezePositionY", false)) constraints |= RigidbodyConstraints.FreezePositionY;
+                if (GetBool(constraintsDict, "freezePositionZ", false)) constraints |= RigidbodyConstraints.FreezePositionZ;
+                if (GetBool(constraintsDict, "freezeRotationX", false)) constraints |= RigidbodyConstraints.FreezeRotationX;
+                if (GetBool(constraintsDict, "freezeRotationY", false)) constraints |= RigidbodyConstraints.FreezeRotationY;
+                if (GetBool(constraintsDict, "freezeRotationZ", false)) constraints |= RigidbodyConstraints.FreezeRotationZ;
+                
+                rb.constraints = constraints;
+            }
+
+            return "{\"success\": true}";
+        }
+
+        private static string AddCollider(Dictionary<string, object> json)
+        {
+            string name = GetString(json, "name", "");
+            string colliderType = GetString(json, "colliderType", "Box");
+            
+            GameObject go = GameObject.Find(name);
+            if (go == null)
+                throw new Exception($"GameObject not found: {name}");
+
+            Collider collider = null;
+
+            switch (colliderType)
+            {
+                case "Box":
+                    BoxCollider boxCollider = go.AddComponent<BoxCollider>();
+                    if (json.ContainsKey("center"))
+                    {
+                        var centerDict = (Dictionary<string, object>)json["center"];
+                        boxCollider.center = new Vector3(
+                            GetFloat(centerDict, "x", 0),
+                            GetFloat(centerDict, "y", 0),
+                            GetFloat(centerDict, "z", 0)
+                        );
+                    }
+                    if (json.ContainsKey("size"))
+                    {
+                        var sizeDict = (Dictionary<string, object>)json["size"];
+                        boxCollider.size = new Vector3(
+                            GetFloat(sizeDict, "x", 1),
+                            GetFloat(sizeDict, "y", 1),
+                            GetFloat(sizeDict, "z", 1)
+                        );
+                    }
+                    collider = boxCollider;
+                    break;
+
+                case "Sphere":
+                    SphereCollider sphereCollider = go.AddComponent<SphereCollider>();
+                    if (json.ContainsKey("center"))
+                    {
+                        var centerDict = (Dictionary<string, object>)json["center"];
+                        sphereCollider.center = new Vector3(
+                            GetFloat(centerDict, "x", 0),
+                            GetFloat(centerDict, "y", 0),
+                            GetFloat(centerDict, "z", 0)
+                        );
+                    }
+                    sphereCollider.radius = GetFloat(json, "radius", 0.5f);
+                    collider = sphereCollider;
+                    break;
+
+                case "Capsule":
+                    CapsuleCollider capsuleCollider = go.AddComponent<CapsuleCollider>();
+                    if (json.ContainsKey("center"))
+                    {
+                        var centerDict = (Dictionary<string, object>)json["center"];
+                        capsuleCollider.center = new Vector3(
+                            GetFloat(centerDict, "x", 0),
+                            GetFloat(centerDict, "y", 0),
+                            GetFloat(centerDict, "z", 0)
+                        );
+                    }
+                    capsuleCollider.radius = GetFloat(json, "radius", 0.5f);
+                    capsuleCollider.height = GetFloat(json, "height", 2f);
+                    collider = capsuleCollider;
+                    break;
+
+                case "Mesh":
+                    MeshCollider meshCollider = go.AddComponent<MeshCollider>();
+                    meshCollider.convex = GetBool(json, "convex", false);
+                    collider = meshCollider;
+                    break;
+
+                default:
+                    throw new Exception($"Unknown collider type: {colliderType}");
+            }
+
+            if (collider != null)
+            {
+                collider.isTrigger = GetBool(json, "isTrigger", false);
+                Undo.RegisterCreatedObjectUndo(collider, "Add Collider");
+            }
+
+            return $"{{\"success\": true, \"colliderType\": \"{colliderType}\"}}";
+        }
+
+        private static string GetBounds(Dictionary<string, object> json)
+        {
+            string name = GetString(json, "name", "");
+            GameObject go = GameObject.Find(name);
+            if (go == null)
+                throw new Exception($"GameObject not found: {name}");
+
+            Bounds bounds = new Bounds(go.transform.position, Vector3.zero);
+            bool hasBounds = false;
+
+            foreach (Renderer renderer in go.GetComponentsInChildren<Renderer>())
+            {
+                if (hasBounds)
+                    bounds.Encapsulate(renderer.bounds);
+                else
+                {
+                    bounds = renderer.bounds;
+                    hasBounds = true;
+                }
+            }
+
+            if (!hasBounds)
+            {
+                return "{\"success\": false, \"error\": \"No renderers found\"}";
+            }
+
+            return $"{{\"success\": true, \"center\": {{\"x\": {bounds.center.x}, \"y\": {bounds.center.y}, \"z\": {bounds.center.z}}}, " +
+                   $"\"size\": {{\"x\": {bounds.size.x}, \"y\": {bounds.size.y}, \"z\": {bounds.size.z}}}, " +
+                   $"\"min\": {{\"x\": {bounds.min.x}, \"y\": {bounds.min.y}, \"z\": {bounds.min.z}}}, " +
+                   $"\"max\": {{\"x\": {bounds.max.x}, \"y\": {bounds.max.y}, \"z\": {bounds.max.z}}}}}";
+        }
+
+        private static string Raycast(Dictionary<string, object> json)
+        {
+            if (!json.ContainsKey("origin") || !json.ContainsKey("direction"))
+                throw new Exception("origin and direction parameters required");
+
+            var originDict = (Dictionary<string, object>)json["origin"];
+            Vector3 origin = new Vector3(
+                GetFloat(originDict, "x", 0),
+                GetFloat(originDict, "y", 0),
+                GetFloat(originDict, "z", 0)
+            );
+
+            var dirDict = (Dictionary<string, object>)json["direction"];
+            Vector3 direction = new Vector3(
+                GetFloat(dirDict, "x", 0),
+                GetFloat(dirDict, "y", 0),
+                GetFloat(dirDict, "z", 0)
+            ).normalized;
+
+            float maxDistance = GetFloat(json, "maxDistance", 1000f);
+
+            RaycastHit hit;
+            int layerMask = -1; // All layers by default
+            
+            if (json.ContainsKey("layerMask") && !string.IsNullOrEmpty(GetString(json, "layerMask", "")))
+            {
+                string layerMaskStr = GetString(json, "layerMask", "");
+                layerMask = LayerMask.GetMask(layerMaskStr.Split(','));
+            }
+
+            if (Physics.Raycast(origin, direction, out hit, maxDistance, layerMask))
+            {
+                return $"{{\"hit\": true, \"distance\": {hit.distance}, " +
+                       $"\"point\": {{\"x\": {hit.point.x}, \"y\": {hit.point.y}, \"z\": {hit.point.z}}}, " +
+                       $"\"normal\": {{\"x\": {hit.normal.x}, \"y\": {hit.normal.y}, \"z\": {hit.normal.z}}}, " +
+                       $"\"objectName\": \"{EscapeJson(hit.collider.gameObject.name)}\"}}";
+            }
+
+            return "{\"hit\": false}";
         }
 
         private static string EscapeJson(string str)
