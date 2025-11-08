@@ -1,6 +1,6 @@
 # Unity MCP v2.0 - Quick Reference
 
-**Essential commands for rapid development**
+**Essential commands for rapid development + World Generation**
 
 ---
 
@@ -13,6 +13,36 @@
 # Test connection
 Test-UnityConnection
 ```
+
+---
+
+## 🌍 World Generation (NEW!)
+
+### Generate Complete World
+```powershell
+# Quick world (default settings)
+New-World -biome "Fantasy"
+
+# Custom world
+New-World -biome "Medieval" -worldSize 150 -density 70
+
+# Reproducible world
+New-World -biome "SciFi" -seed "MyWorld123"
+```
+
+### Available Biomes
+- **Forest** - Trees and greenery
+- **Desert** - Sand dunes and cacti
+- **City** - Modern buildings
+- **Medieval** - Castle and houses
+- **SciFi** - Futuristic structures
+- **Fantasy** - Magical environment
+- **Underwater** - Coral formations
+- **Arctic** - Ice and snow
+- **Jungle** - Dense vegetation
+- **Wasteland** - Post-apocalyptic ruins
+
+**See:** `WORLD_GENERATION_GUIDE.md` for complete reference
 
 ---
 

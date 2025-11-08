@@ -190,6 +190,8 @@ namespace UnityMCP
                     return CombineChildren(json);
                 case "/queryScene":
                     return QueryScene(json);
+                case "/generateWorld":
+                    return GenerateWorld(json);
                 case "/ping":
                     return "{\"status\": \"ok\"}";
                 default:
@@ -1013,6 +1015,85 @@ namespace UnityMCP
                 return value.ToString();
 
             return value;
+        }
+
+        /// <summary>
+        /// Generate a complete world based on biome and settings
+        /// </summary>
+        private static string GenerateWorld(Dictionary<string, object> json)
+        {
+            try
+            {
+                // Parse settings
+                var settings = new WorldGenerator.WorldSettings();
+                
+                if (json.ContainsKey("biome"))
+                {
+                    string biomeStr = GetString(json, "biome", "Forest");
+                    if (Enum.TryParse(biomeStr, true, out WorldGenerator.BiomeType biome))
+                    {
+                        settings.biome = biome;
+                    }
+                }
+                
+                if (json.ContainsKey("worldSize"))
+                    settings.worldSize = GetInt(json, "worldSize", 100);
+                
+                if (json.ContainsKey("density"))
+                    settings.density = GetInt(json, "density", 50);
+                
+                if (json.ContainsKey("includeTerrain"))
+                    settings.includeTerrain = GetBool(json, "includeTerrain", true);
+                
+                if (json.ContainsKey("includeLighting"))
+                    settings.includeLighting = GetBool(json, "includeLighting", true);
+                
+                if (json.ContainsKey("includeProps"))
+                    settings.includeProps = GetBool(json, "includeProps", true);
+                
+                if (json.ContainsKey("optimizeMeshes"))
+                    settings.optimizeMeshes = GetBool(json, "optimizeMeshes", true);
+                
+                if (json.ContainsKey("seed"))
+                    settings.seedString = GetString(json, "seed", "");
+
+                // Generate world
+                var result = WorldGenerator.GenerateWorld(settings);
+                
+                // Convert to JSON
+                var jsonParts = new List<string>();
+                foreach (var kvp in result)
+                {
+                    string value;
+                    if (kvp.Value is string)
+                        value = $"\"{EscapeJson(kvp.Value.ToString())}\"";
+                    else if (kvp.Value is bool)
+                        value = kvp.Value.ToString().ToLower();
+                    else if (kvp.Value is Dictionary<string, object>)
+                    {
+                        var subDict = (Dictionary<string, object>)kvp.Value;
+                        var subParts = new List<string>();
+                        foreach (var subKvp in subDict)
+                        {
+                            string subValue = subKvp.Value is string ? 
+                                $"\"{EscapeJson(subKvp.Value.ToString())}\"" : 
+                                subKvp.Value.ToString();
+                            subParts.Add($"\"{subKvp.Key}\": {subValue}");
+                        }
+                        value = "{" + string.Join(", ", subParts) + "}";
+                    }
+                    else
+                        value = kvp.Value.ToString();
+                    
+                    jsonParts.Add($"\"{kvp.Key}\": {value}");
+                }
+                
+                return "{" + string.Join(", ", jsonParts) + "}";
+            }
+            catch (Exception e)
+            {
+                return $"{{\"success\": false, \"error\": \"{EscapeJson(e.Message)}\"}}";
+            }
         }
 
         private static string EscapeJson(string str)
