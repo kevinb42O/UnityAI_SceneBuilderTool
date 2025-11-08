@@ -90,6 +90,21 @@ The **Unity AI Scene Builder Tool** is a revolutionary system that enables real-
 
 ## 💡 Usage Examples
 
+### Building 21 - Call of Duty DMZ Replica (NEW!)
+```powershell
+# Create complete B21 military facility (500+ objects)
+cd UnityMCP
+.\Building21.ps1
+
+# Result: Multi-story complex with:
+# - 3 underground levels (storage, server rooms, labs)
+# - Ground floor with security lobby
+# - 4 upper floors (research labs, offices)
+# - Rooftop helipad with lighting
+# Time: 15-30 seconds
+```
+**See [BUILDING21_GUIDE.md](UnityMCP/BUILDING21_GUIDE.md) for complete documentation.**
+
 ### Generate Complete Worlds
 ```powershell
 # Generate a fantasy world with magical trees and crystals
@@ -161,6 +176,13 @@ $nearby = Find-Objects -radius 50 -position @{ x=0; y=0; z=0 }
 ## 📖 Documentation
 
 ### Getting Started
+### Featured Projects
+- **[BUILDING21_GUIDE.md](UnityMCP/BUILDING21_GUIDE.md)** - Call of Duty B21 replica (500+ objects, 8 levels) (NEW!)
+- **[BUILDING21_VISUAL_MAP.md](UnityMCP/BUILDING21_VISUAL_MAP.md)** - ASCII floor maps and navigation (NEW!)
+- **[BUILDING21_QUICK_REF.md](UnityMCP/BUILDING21_QUICK_REF.md)** - Quick reference card (NEW!)
+
+### System Documentation
+- **[WORLD_GENERATION_GUIDE.md](UnityMCP/WORLD_GENERATION_GUIDE.md)** - Complete world generation guide
 - **[V2_QUICK_REFERENCE.md](UnityMCP/V2_QUICK_REFERENCE.md)** - Essential commands (2-minute read)
 - **[VILLA_QUICK_START.md](UnityMCP/VILLA_QUICK_START.md)** - Build a villa in 3 minutes (NEW! 🏰)
 

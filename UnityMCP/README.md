@@ -155,6 +155,22 @@ Control Unity Editor with advanced capabilities: rotation precision, object arra
 
 ## 🎯 Real-World Examples
 
+### Example 0: Building 21 - Multi-Story Military Facility
+```powershell
+# Complete Call of Duty DMZ B21 map replica
+cd UnityMCP
+.\Building21.ps1
+
+# Result: 500+ objects creating:
+# - 3 underground levels (B1-B3)
+# - Ground floor with lobby
+# - 4 upper floors
+# - Rooftop with helipad
+# - Server rooms, labs, offices
+# Time: 15-30 seconds
+```
+**See [BUILDING21_GUIDE.md](BUILDING21_GUIDE.md) for complete documentation.**
+
 ### Example 1: Create a Temple with Pillars
 ```javascript
 // 1. Create base pillar
