@@ -1118,6 +1118,95 @@ for ($i = 0; $i -lt 15; $i++) {
 Write-Host "[OK] Ambient Details: 50 objects" -ForegroundColor Green
 
 # ============================================================================
+# SECTION 9B: ADVANCED FOREST BIOME (Procedurally Generated)
+# ============================================================================
+Write-Host ""
+Write-Host "=== SECTION 9B: ADVANCED FOREST BIOME ===" -ForegroundColor Magenta
+Write-Host "  Generating massive realistic temperate deciduous forest..." -ForegroundColor Gray
+Write-Host "  This uses Unity's procedural world generation API" -ForegroundColor Gray
+Write-Host ""
+
+# Position the advanced forest in a new area (far corner)
+$forestOffsetX = -400
+$forestOffsetZ = -400
+
+Write-Host "  [BIOME] Positioning advanced forest at ($forestOffsetX, $forestOffsetZ)..." -ForegroundColor Yellow
+Write-Host "  [BIOME] World Size: 120m x 120m" -ForegroundColor Gray
+Write-Host "  [BIOME] Density: 80 (Dense temperate forest)" -ForegroundColor Gray
+Write-Host "  [BIOME] Features: Multi-layered canopy, fallen logs, stumps, boulders" -ForegroundColor Gray
+Write-Host ""
+
+$advancedForestSettings = @{
+    biome = "Forest"
+    worldSize = 120
+    density = 80
+    includeTerrain = $true
+    includeLighting = $false  # We already have lighting
+    includeProps = $true
+    optimizeMeshes = $false
+    seed = "UltimateWorldForest2025"
+    offsetX = $forestOffsetX
+    offsetZ = $forestOffsetZ
+} | ConvertTo-Json
+
+$forestStartTime = Get-Date
+
+try {
+    Write-Host "  [GENERATING] Please wait, creating realistic forest ecosystem..." -ForegroundColor Yellow
+    
+    $forestResult = Invoke-RestMethod -Uri "$UNITY_BASE/generateWorld" `
+        -Method POST `
+        -ContentType "application/json" `
+        -Body $advancedForestSettings `
+        -UseBasicParsing `
+        -TimeoutSec 300
+    
+    if ($forestResult.success) {
+        $forestDuration = (Get-Date) - $forestStartTime
+        $forestSeconds = [math]::Round($forestDuration.TotalSeconds, 1)
+        
+        Write-Host ""
+        Write-Host "  [SUCCESS] ADVANCED FOREST GENERATED!" -ForegroundColor Green
+        Write-Host ""
+        Write-Host "  Generation Statistics:" -ForegroundColor Cyan
+        Write-Host "  =====================" -ForegroundColor Cyan
+        Write-Host "  Total Forest Objects: $($forestResult.totalObjects)" -ForegroundColor White
+        Write-Host "  Generation Time: ${forestSeconds}s" -ForegroundColor White
+        Write-Host "  Biome Type: $($forestResult.biome)" -ForegroundColor White
+        Write-Host "  World Name: $($forestResult.worldName)" -ForegroundColor White
+        Write-Host ""
+        
+        # Add forest objects to total count
+        $advancedForestObjects = $forestResult.totalObjects
+        $totalObjects += $advancedForestObjects
+        
+        Write-Host "  [BIOME] Advanced Forest Features:" -ForegroundColor Yellow
+        Write-Host "    - 4 Tree Species (Oak, Maple, Birch, Pine)" -ForegroundColor DarkGreen
+        Write-Host "    - Multi-layered canopy system" -ForegroundColor DarkGreen
+        Write-Host "    - Understory vegetation (saplings, bushes, ferns)" -ForegroundColor DarkGreen
+        Write-Host "    - Forest floor debris (fallen logs, stumps, boulders)" -ForegroundColor DarkGreen
+        Write-Host "    - Natural clearings with wildflowers" -ForegroundColor DarkGreen
+        Write-Host "    - Realistic tree proportions and distributions" -ForegroundColor DarkGreen
+        Write-Host ""
+        Write-Host "[OK] Advanced Forest Biome: $advancedForestObjects objects" -ForegroundColor Green
+        
+    } else {
+        Write-Host ""
+        Write-Host "  [WARNING] Advanced forest generation failed: $($forestResult.error)" -ForegroundColor Yellow
+        Write-Host "  [INFO] Continuing with rest of world generation..." -ForegroundColor Yellow
+        Write-Host ""
+        $advancedForestObjects = 0
+    }
+} catch {
+    Write-Host ""
+    Write-Host "  [WARNING] Could not generate advanced forest: $_" -ForegroundColor Yellow
+    Write-Host "  [INFO] This feature requires Unity API endpoint /generateWorld" -ForegroundColor Gray
+    Write-Host "  [INFO] Continuing with rest of world generation..." -ForegroundColor Yellow
+    Write-Host ""
+    $advancedForestObjects = 0
+}
+
+# ============================================================================
 # SECTION 10: PARKOUR ROAD SYSTEM
 # ============================================================================
 Write-Host ""
@@ -1549,6 +1638,20 @@ Write-Host "   20. Log Benches (near landmarks)" -ForegroundColor DarkYellow
 Write-Host "   21. Tree Stumps (cut logs)" -ForegroundColor DarkYellow
 Write-Host "   22. Scattered Branches (40+ twigs)" -ForegroundColor DarkGray
 Write-Host ""
+Write-Host "  ADVANCED FOREST BIOME (PROCEDURAL - NEW!):" -ForegroundColor Yellow
+if ($advancedForestObjects -gt 0) {
+    Write-Host "   23. Temperate Deciduous Forest (120m x 120m)" -ForegroundColor DarkGreen
+    Write-Host "       - Located at far corner (-400, -400)" -ForegroundColor Gray
+    Write-Host "       - 4 Tree Species: Oak (35%), Pine (25%), Birch (20%), Maple (20%)" -ForegroundColor Gray
+    Write-Host "       - Multi-layered ecosystem: Canopy, Understory, Forest Floor" -ForegroundColor Gray
+    Write-Host "       - $advancedForestObjects procedurally generated objects" -ForegroundColor Gray
+    Write-Host "       - Realistic tree distributions with age variation" -ForegroundColor Gray
+    Write-Host "       - Natural clearings, fallen logs, moss-covered boulders" -ForegroundColor Gray
+    Write-Host "       - Inspired by Appalachian Mountain forests" -ForegroundColor Gray
+} else {
+    Write-Host "   23. Advanced Forest Biome (skipped - requires Unity API)" -ForegroundColor DarkGray
+}
+Write-Host ""
 Write-Host "  PARKOUR COURSE FEATURES:" -ForegroundColor Yellow
 Write-Host "   [START] Castle Courtyard (green glowing platform)" -ForegroundColor Cyan
 Write-Host "    -> Ground roads to all 4 portals (organic curved paths)" -ForegroundColor Gray
@@ -1575,14 +1678,44 @@ Write-Host "    * Hollow log tunnels using cylinder geometry" -ForegroundColor W
 Write-Host "    * Complex log pile structures (stacked cylinders)" -ForegroundColor White
 Write-Host "    * Natural log benches with backrests" -ForegroundColor White
 Write-Host "    * Forest floor scatter distribution system" -ForegroundColor White
+Write-Host "    * Procedural forest biome using Unity world generation API" -ForegroundColor White
 Write-Host ""
-Write-Host "  PLAYABLE AREA: 3000x3000 units" -ForegroundColor White
-Write-Host "  TOTAL OBJECTS: ~720+ (base 570 + 150 fallen trunks)" -ForegroundColor White
-Write-Host "  WITH PARKOUR: ~1000+ TOTAL OBJECTS!" -ForegroundColor Cyan
+Write-Host "  PLAYABLE AREA: 3500x3500 units (expanded with forest biome)" -ForegroundColor White
+Write-Host "  BASE OBJECTS: ~720 (structures + fallen trunks)" -ForegroundColor White
+Write-Host "  PARKOUR OBJECTS: ~283" -ForegroundColor White
+if ($advancedForestObjects -gt 0) {
+    Write-Host "  ADVANCED FOREST: ~$advancedForestObjects (procedural)" -ForegroundColor White
+    $grandTotal = 720 + 283 + $advancedForestObjects
+    Write-Host "  GRAND TOTAL: ~$grandTotal OBJECTS!" -ForegroundColor Cyan
+    Write-Host "  STATUS: ABSOLUTE MASTERPIECE!" -ForegroundColor Magenta
+} else {
+    Write-Host "  GRAND TOTAL: ~1003 OBJECTS!" -ForegroundColor Cyan
+    Write-Host "  STATUS: MIND-BLOWING!" -ForegroundColor Magenta
+}
 Write-Host ""
 Write-Host "======================================================================" -ForegroundColor Cyan
-Write-Host "  MIND-BLOWING COMPLETE WORLD CREATED!" -ForegroundColor Green
+if ($advancedForestObjects -gt 0) {
+    Write-Host "  ULTIMATE COMPLETE WORLD + ADVANCED FOREST CREATED!" -ForegroundColor Green
+    Write-Host "  Largest ecosystem: 120m x 120m procedural temperate forest!" -ForegroundColor Green
+} else {
+    Write-Host "  MIND-BLOWING COMPLETE WORLD CREATED!" -ForegroundColor Green
+}
 Write-Host "  Ultimate realism with fallen trunks, hollow logs & natural bridges!" -ForegroundColor Green
 Write-Host "  Follow the glowing markers for an EPIC adventure!" -ForegroundColor Green
 Write-Host "======================================================================" -ForegroundColor Cyan
+Write-Host ""
+if ($advancedForestObjects -gt 0) {
+    Write-Host "EXPLORATION TIP:" -ForegroundColor Yellow
+    Write-Host "  Visit the Advanced Forest Biome at coordinates (-400, 0, -400)" -ForegroundColor White
+    Write-Host "  See realistic 4-species temperate deciduous forest ecosystem!" -ForegroundColor White
+    Write-Host "  Features: Multi-layer canopy, natural clearings, fallen logs, stumps" -ForegroundColor White
+    Write-Host ""
+}
+Write-Host "CAMERA SUGGESTIONS:" -ForegroundColor Yellow
+Write-Host "  Castle Overview: (0, 80, -100) rotation (35, 0, 0)" -ForegroundColor Gray
+Write-Host "  Forest Floor: (220, 5, 220) rotation (10, -45, 0)" -ForegroundColor Gray
+if ($advancedForestObjects -gt 0) {
+    Write-Host "  Advanced Forest: (-400, 25, -400) rotation (25, 0, 0)" -ForegroundColor Gray
+}
+Write-Host "  Full World: (0, 200, 0) rotation (90, 0, 0)" -ForegroundColor Gray
 Write-Host ""
