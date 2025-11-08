@@ -86,6 +86,8 @@ Control Unity Editor with advanced capabilities: rotation precision, object arra
 - **[ADVANCED_TOOLS_QUICK_REF.md](ADVANCED_TOOLS_QUICK_REF.md)** - Quick reference card
 - **[V2_DOCUMENTATION.md](V2_DOCUMENTATION.md)** - Materials & hierarchy system
 - **[WORLD_GENERATION_GUIDE.md](WORLD_GENERATION_GUIDE.md)** - Biome generation
+- **[PARKOUR_COURSE_GUIDE.md](PARKOUR_COURSE_GUIDE.md)** - Complete parkour system (NEW!)
+- **[PARKOUR_QUICK_REF.md](PARKOUR_QUICK_REF.md)** - Parkour quick reference (NEW!)
 
 ## 🎮 Demo Scripts
 
@@ -104,7 +106,52 @@ Control Unity Editor with advanced capabilities: rotation precision, object arra
 
 # World generation
 .\demo-world-generation.ps1
+
+# Ultimate complete world with everything
+.\create-ultimate-complete-world.ps1
+
+# Comprehensive parkour course (NEW!)
+.\create-parkour-course.ps1
+
+# Test parkour course validation
+.\test-parkour-course.ps1
 ```
+
+## 🏃 Parkour Course System (NEW!)
+
+**Complete 7-Phase Parkour Enhancement System**
+
+### Features
+- **279+ parkour objects** across 7 integrated phases
+- **Ground road network** connecting all major landmarks
+- **Elevated platforms** from castle to cathedral
+- **Aerial stepping stones** to floating islands
+- **Tree-enhanced islands** with inter-island bridges
+- **Spiral tower platforms** with descending paths
+- **Forest integration** with elevated tree platforms
+- **Full checkpoint system** with start/finish markers
+
+### Quick Start
+```powershell
+# Create base world first
+.\create-ultimate-complete-world.ps1
+
+# Add comprehensive parkour course
+.\create-parkour-course.ps1
+
+# Validate installation
+.\test-parkour-course.ps1
+```
+
+### Phase Breakdown
+1. **Phase 2:** Ground Road System (92 objects)
+2. **Phase 3:** Elevated Parkour Elements (33 objects)
+3. **Phase 4:** Floating Island Enhancement (44+ objects)
+4. **Phase 5:** Tower Integration (40 objects)
+5. **Phase 6:** Forest Integration (14 objects)
+6. **Phase 7:** Finalization (56 objects with checkpoints)
+
+**See [PARKOUR_COURSE_GUIDE.md](PARKOUR_COURSE_GUIDE.md) for complete documentation.**
 
 ## 🎯 Real-World Examples
 
