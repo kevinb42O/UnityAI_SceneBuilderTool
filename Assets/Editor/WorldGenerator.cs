@@ -12,6 +12,20 @@ namespace UnityMCP
     /// </summary>
     public class WorldGenerator
     {
+        /// <summary>
+        /// Create a URP-compatible material
+        /// </summary>
+        private static Material CreateURPMaterial()
+        {
+            // Try URP/Lit shader first, fallback to Standard if not available
+            Shader urpShader = Shader.Find("Universal Render Pipeline/Lit");
+            if (urpShader == null)
+            {
+                urpShader = Shader.Find("Standard");
+            }
+            return new Material(urpShader);
+        }
+
         // Biome types supported
         public enum BiomeType
         {
@@ -139,7 +153,7 @@ namespace UnityMCP
             var renderer = ground.GetComponent<Renderer>();
             if (renderer != null)
             {
-                Material mat = new Material(Shader.Find("Standard"));
+                Material mat = CreateURPMaterial();
                 mat.name = "TerrainMaterial";
 
                 switch (settings.biome)
@@ -288,7 +302,7 @@ namespace UnityMCP
                 var trunkRenderer = trunk.GetComponent<Renderer>();
                 if (trunkRenderer != null)
                 {
-                    Material trunkMat = new Material(Shader.Find("Standard"));
+                    Material trunkMat = CreateURPMaterial();
                     trunkMat.color = new Color(0.4f, 0.25f, 0.1f);
                     trunkRenderer.sharedMaterial = trunkMat;
                     EditorUtility.SetDirty(trunkRenderer);
@@ -307,7 +321,7 @@ namespace UnityMCP
                 var foliageRenderer = foliage.GetComponent<Renderer>();
                 if (foliageRenderer != null)
                 {
-                    Material foliageMat = new Material(Shader.Find("Standard"));
+                    Material foliageMat = CreateURPMaterial();
                     foliageMat.color = new Color(0.1f, 0.5f, 0.1f);
                     foliageRenderer.sharedMaterial = foliageMat;
                     EditorUtility.SetDirty(foliageRenderer);
@@ -346,7 +360,7 @@ namespace UnityMCP
                 var renderer = dune.GetComponent<Renderer>();
                 if (renderer != null)
                 {
-                    Material mat = new Material(Shader.Find("Standard"));
+                    Material mat = CreateURPMaterial();
                     mat.color = new Color(0.95f, 0.85f, 0.6f);
                     mat.SetFloat("_Glossiness", 0.2f);
                     renderer.sharedMaterial = mat;
@@ -373,7 +387,7 @@ namespace UnityMCP
                 var renderer = cactus.GetComponent<Renderer>();
                 if (renderer != null)
                 {
-                    Material mat = new Material(Shader.Find("Standard"));
+                    Material mat = CreateURPMaterial();
                     mat.color = new Color(0.2f, 0.5f, 0.2f);
                     renderer.sharedMaterial = mat;
                     EditorUtility.SetDirty(renderer);
@@ -420,7 +434,7 @@ namespace UnityMCP
                     var renderer = building.GetComponent<Renderer>();
                     if (renderer != null)
                     {
-                        Material mat = new Material(Shader.Find("Standard"));
+                        Material mat = CreateURPMaterial();
                         mat.color = new Color(
                             UnityEngine.Random.Range(0.5f, 0.8f),
                             UnityEngine.Random.Range(0.5f, 0.8f),
@@ -472,7 +486,7 @@ namespace UnityMCP
                 var renderer = wall.GetComponent<Renderer>();
                 if (renderer != null)
                 {
-                    Material mat = new Material(Shader.Find("Standard"));
+                    Material mat = CreateURPMaterial();
                     mat.color = new Color(0.5f, 0.5f, 0.5f);
                     mat.SetFloat("_Glossiness", 0.1f);
                     renderer.sharedMaterial = mat;
@@ -501,7 +515,7 @@ namespace UnityMCP
                 var renderer = tower.GetComponent<Renderer>();
                 if (renderer != null)
                 {
-                    Material mat = new Material(Shader.Find("Standard"));
+                    Material mat = CreateURPMaterial();
                     mat.color = new Color(0.4f, 0.4f, 0.4f);
                     mat.SetFloat("_Glossiness", 0.1f);
                     renderer.sharedMaterial = mat;
@@ -530,7 +544,7 @@ namespace UnityMCP
                 var renderer = house.GetComponent<Renderer>();
                 if (renderer != null)
                 {
-                    Material mat = new Material(Shader.Find("Standard"));
+                    Material mat = CreateURPMaterial();
                     mat.color = new Color(0.4f, 0.25f, 0.1f);
                     renderer.sharedMaterial = mat;
                     EditorUtility.SetDirty(renderer);
@@ -549,7 +563,7 @@ namespace UnityMCP
                 var roofRenderer = roof.GetComponent<Renderer>();
                 if (roofRenderer != null)
                 {
-                    Material mat = new Material(Shader.Find("Standard"));
+                    Material mat = CreateURPMaterial();
                     mat.color = new Color(0.6f, 0.2f, 0.1f);
                     roofRenderer.sharedMaterial = mat;
                     EditorUtility.SetDirty(roofRenderer);
@@ -587,7 +601,7 @@ namespace UnityMCP
                 var renderer = structure.GetComponent<Renderer>();
                 if (renderer != null)
                 {
-                    Material mat = new Material(Shader.Find("Standard"));
+                    Material mat = CreateURPMaterial();
                     mat.color = new Color(0.7f, 0.7f, 0.8f);
                     mat.SetFloat("_Metallic", 0.8f);
                     mat.SetFloat("_Glossiness", 0.9f);
@@ -610,7 +624,7 @@ namespace UnityMCP
                     var glowRenderer = glow.GetComponent<Renderer>();
                     if (glowRenderer != null)
                     {
-                        Material glowMat = new Material(Shader.Find("Standard"));
+                        Material glowMat = CreateURPMaterial();
                         glowMat.color = new Color(0f, 0.5f, 1f);
                         glowMat.SetColor("_EmissionColor", new Color(0f, 1f, 2f));
                         glowMat.EnableKeyword("_EMISSION");
@@ -655,7 +669,7 @@ namespace UnityMCP
                 var renderer = crystal.GetComponent<Renderer>();
                 if (renderer != null)
                 {
-                    Material mat = new Material(Shader.Find("Standard"));
+                    Material mat = CreateURPMaterial();
                     Color[] colors = {
                         new Color(1f, 0f, 1f), // Magenta
                         new Color(0f, 1f, 1f), // Cyan
@@ -691,7 +705,7 @@ namespace UnityMCP
                 var trunkRenderer = trunk.GetComponent<Renderer>();
                 if (trunkRenderer != null)
                 {
-                    Material trunkMat = new Material(Shader.Find("Standard"));
+                    Material trunkMat = CreateURPMaterial();
                     trunkMat.color = new Color(0.4f, 0.1f, 0.5f);
                     trunkRenderer.sharedMaterial = trunkMat;
                     EditorUtility.SetDirty(trunkRenderer);
@@ -710,7 +724,7 @@ namespace UnityMCP
                 var foliageRenderer = foliage.GetComponent<Renderer>();
                 if (foliageRenderer != null)
                 {
-                    Material foliageMat = new Material(Shader.Find("Standard"));
+                    Material foliageMat = CreateURPMaterial();
                     foliageMat.color = new Color(0.5f, 0.1f, 0.8f);
                     foliageMat.SetColor("_EmissionColor", new Color(0.3f, 0.05f, 0.4f));
                     foliageMat.EnableKeyword("_EMISSION");
@@ -760,7 +774,7 @@ namespace UnityMCP
                 var renderer = ice.GetComponent<Renderer>();
                 if (renderer != null)
                 {
-                    Material mat = new Material(Shader.Find("Standard"));
+                    Material mat = CreateURPMaterial();
                     mat.color = new Color(0.8f, 0.9f, 1f);
                     mat.SetFloat("_Metallic", 0.1f);
                     mat.SetFloat("_Glossiness", 0.8f);
@@ -803,7 +817,7 @@ namespace UnityMCP
                     var trunkRenderer = trunk.GetComponent<Renderer>();
                     if (trunkRenderer != null)
                     {
-                        Material mat = new Material(Shader.Find("Standard"));
+                        Material mat = CreateURPMaterial();
                         mat.color = new Color(0.3f, 0.2f, 0.1f);
                         trunkRenderer.sharedMaterial = mat;
                         EditorUtility.SetDirty(trunkRenderer);
@@ -823,7 +837,7 @@ namespace UnityMCP
                     var renderer = plant.GetComponent<Renderer>();
                     if (renderer != null)
                     {
-                        Material mat = new Material(Shader.Find("Standard"));
+                        Material mat = CreateURPMaterial();
                         mat.color = new Color(
                             UnityEngine.Random.Range(0.1f, 0.3f),
                             UnityEngine.Random.Range(0.4f, 0.6f),
@@ -870,7 +884,7 @@ namespace UnityMCP
                 var renderer = coral.GetComponent<Renderer>();
                 if (renderer != null)
                 {
-                    Material mat = new Material(Shader.Find("Standard"));
+                    Material mat = CreateURPMaterial();
                     Color[] colors = {
                         new Color(1f, 0.3f, 0.3f), // Red
                         new Color(1f, 0.6f, 0f),   // Orange
@@ -923,7 +937,7 @@ namespace UnityMCP
                 var renderer = debris.GetComponent<Renderer>();
                 if (renderer != null)
                 {
-                    Material mat = new Material(Shader.Find("Standard"));
+                    Material mat = CreateURPMaterial();
                     mat.color = new Color(0.4f, 0.3f, 0.2f);
                     mat.SetFloat("_Metallic", 0.5f);
                     mat.SetFloat("_Glossiness", 0.2f);
@@ -968,7 +982,7 @@ namespace UnityMCP
                 var renderer = prop.GetComponent<Renderer>();
                 if (renderer != null)
                 {
-                    Material mat = new Material(Shader.Find("Standard"));
+                    Material mat = CreateURPMaterial();
                     mat.color = new Color(0.3f, 0.3f, 0.3f);
                     mat.SetFloat("_Glossiness", 0.1f);
                     renderer.sharedMaterial = mat;
@@ -989,8 +1003,16 @@ namespace UnityMCP
         private static Dictionary<string, object> GenerateLighting(GameObject parent, WorldSettings settings)
         {
             // Find or create directional light
-            Light[] lights = Light.GetLights(LightType.Directional, 0);
-            Light dirLight = lights.Length > 0 ? lights[0] : null;
+            Light[] lights = GameObject.FindObjectsByType<Light>(FindObjectsSortMode.None);
+            Light dirLight = null;
+            foreach (Light light in lights)
+            {
+                if (light.type == LightType.Directional)
+                {
+                    dirLight = light;
+                    break;
+                }
+            }
 
             if (dirLight == null)
             {
@@ -1123,14 +1145,14 @@ namespace UnityMCP
                 if (kvp.Value.Count < 5) continue; // Only combine groups with 5+ objects
 
                 Material material = kvp.Key;
-                List<MeshFilter> meshFilters = kvp.Value;
+                List<MeshFilter> groupMeshFilters = kvp.Value;
 
                 // Create combine instances
-                CombineInstance[] combine = new CombineInstance[meshFilters.Count];
-                for (int i = 0; i < meshFilters.Count; i++)
+                CombineInstance[] combine = new CombineInstance[groupMeshFilters.Count];
+                for (int i = 0; i < groupMeshFilters.Count; i++)
                 {
-                    combine[i].mesh = meshFilters[i].sharedMesh;
-                    combine[i].transform = meshFilters[i].transform.localToWorldMatrix;
+                    combine[i].mesh = groupMeshFilters[i].sharedMesh;
+                    combine[i].transform = groupMeshFilters[i].transform.localToWorldMatrix;
                 }
 
                 // Create combined mesh
@@ -1152,7 +1174,7 @@ namespace UnityMCP
                 newMR.sharedMaterial = material;
 
                 // Disable original objects instead of destroying (allows undo)
-                foreach (MeshFilter mf in meshFilters)
+                foreach (MeshFilter mf in groupMeshFilters)
                 {
                     mf.gameObject.SetActive(false);
                 }
