@@ -1,0 +1,19 @@
+{
+  "name": "unity-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for controlling Unity Editor",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "unity-mcp-server": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "bridge": "node vscode-bridge.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "express": "^4.21.2",
+    "node-fetch": "^3.3.2"
+  }
+}

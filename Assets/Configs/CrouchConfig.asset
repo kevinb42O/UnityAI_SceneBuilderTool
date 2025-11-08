@@ -1,0 +1,135 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b31d030d3bb5c7f4890340aeb8e1234f, type: 3}
+  m_Name: CrouchConfig
+  m_EditorClassIdentifier: 
+  standingHeight: 320
+  crouchedHeight: 140
+  standingCameraY: 300
+  crouchedCameraY: 130
+  transitionSpeed: 1280
+  slideMinStartSpeed: 960
+  slideGravityAccel: 980
+  slideFrictionFlat: 0.5
+  slideFrictionSlope: 0.5
+  slideSteerAcceleration: 1200
+  slideMaxSpeed: 6000
+  momentumPreservation: 1
+  stickToGroundVelocity: 66
+  uphillFrictionMultiplier: 2
+  uphillRampUpDuration: 0.333
+  diveForwardForce: 5000
+  diveUpwardForce: 3500
+  diveProneDuration: 0.8
+  diveMinSprintSpeed: 320
+  diveSlideFriction: 2400
+  slideFOVKick: 1
+  slideFOVAdd: 15
+  slideFOVLerpSpeed: 20
+  steerAccelBySpeedCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0.0014999998
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 200
+      value: 1.3
+      inSlope: 0.0014999998
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  frictionBySpeedCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: -0.0019999999
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 200
+      value: 0.6
+      inSlope: -0.0019999999
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  steerDriftLerp: 0.85
+  slideAutoStandSpeed: 300
+  slideMinimumDuration: 0.3
+  slideGroundCoyoteTime: 0.225
+  slidingGravity: -2250
+  slidingTerminalDownVelocity: 15000
+  minDownYWhileSliding: 2250
+  slideGroundCheckDistance: 640
+  landingSlopeAngleForAutoSlide: 66
+  landingMomentumDamping: 0.65
+  enableLandingSpeedCap: 0
+  landingMaxPreservedSpeed: 2000
+  rampMinSpeed: 140
+  rampExtraUpBoost: 0.15
+  slideStepOffsetOverride: 20
+  reduceStepOffsetDuringSlide: 0
+  holdToCrouch: 1
+  holdToSlide: 1
+  enableSlide: 1
+  enableTacticalDive: 1
+  rampLaunchEnabled: 1
+  autoSlideOnLandingWhileCrouched: 1
+  autoResumeSlideFromMomentum: 1
+  slideAudioEnabled: 0
+  diveAudioEnabled: 0
+  slideParticlesEnabled: 0
+  showDebugVisualization: 0
+  verboseDebugLogging: 0
+  enableSmoothWallSliding: 0
+  wallSlideMaxIterations: 3
+  wallSlideSpeedPreservation: 0.95
+  wallSlideMinAngle: 45
+  wallSlideSkinMultiplier: 0.95
+  showWallSlideDebug: 0
+  slideHardCapSeconds: 3.5
+  slideBaseDuration: 1.2
+  slideMaxExtraDuration: 1
+  slideSpeedForMaxExtra: 120
+  slopeBoostAngleThreshold: 15
+  uphillReversalSpeed: 12
+  uphillMinTime: 0.2
+  uphillReversalBoost: 25
+  slopeTransitionGrace: 0.35
+  radiusSkin: 0.02
+  groundNormalSmoothing: 15
+  landingMomentumResumeWindow: 1.2
+  slideLandingBuffer: 0.6
+  rampMinUpY: 8
+  rampNormalDeltaDeg: 12
+  rampDownhillMemory: 0.3

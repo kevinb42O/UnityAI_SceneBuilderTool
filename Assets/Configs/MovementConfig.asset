@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2390631da9a82594093707083751acb3, type: 3}
+  m_Name: MovementConfig
+  m_EditorClassIdentifier: 
+  gravity: -7000
+  terminalVelocity: 6000
+  jumpForce: 3500
+  doubleJumpForce: 2800
+  moveSpeed: 1000
+  sprintMultiplier: 2
+  maxAirSpeed: 20000
+  airControlStrength: 0.7
+  airAcceleration: 2000
+  highSpeedThreshold: 1300
+  coyoteTime: 0.225
+  maxAirJumps: 1
+  jumpCutMultiplier: 0.5
+  enableWallJump: 1
+  wallJumpUpForce: 1200
+  wallJumpOutForce: 1000
+  wallJumpForwardBoost: 0
+  wallJumpCameraDirectionBoost: 600
+  wallJumpCameraBoostRequiresInput: 0
+  wallJumpFallSpeedBonus: 1
+  wallJumpInputInfluence: 1
+  wallJumpInputBoostMultiplier: 1.2
+  wallJumpInputBoostThreshold: 0.15
+  wallJumpMomentumPreservation: 0.35
+  wallDetectionDistance: 400
+  wallJumpCooldown: 0.12
+  wallJumpGracePeriod: 0.08
+  maxConsecutiveWallJumps: 99
+  minFallSpeedForWallJump: 0.01
+  wallJumpAirControlLockoutTime: 0
+  showWallJumpDebug: 0
+  slopeForce: 3500
+  maxSlopeAngle: 55
+  minimumSlopeAngle: 0.5
+  enableSlopeMomentum: 0
+  slopeAccelerationMultiplier: 0.4
+  uphillFrictionMultiplier: 0.2
+  rampJumpBonus: 0.25
+  maxStepHeight: 65
+  playerHeight: 320
+  playerRadius: 50
+  stairCheckDistance: 300
+  stairClimbSpeedMultiplier: 1
+  smoothStepClimbing: 1
+  stepOffsetHeightPercent: 0.2
+  descendForce: 2000
+  groundCheckDistance: 350
+  groundedHysteresisSeconds: 0.02
+  groundedDebounceFrames: 1
+  jumpGroundSuppressSeconds: 0
+  enableAntiSinkPrediction: 1
+  groundPredictionDistance: 400
+  groundClearance: 20
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 8

@@ -1,0 +1,587 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2953443531628903081
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3930516964321116455}
+  - component: {fileID: 9176523035468078436}
+  - component: {fileID: 908557958129858795}
+  - component: {fileID: 233396450389861739}
+  - component: {fileID: 1684218235697631727}
+  m_Layer: 0
+  m_Name: Main Camera
+  m_TagString: MainCamera
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3930516964321116455
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2953443531628903081}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5768776682578304047}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!20 &9176523035468078436
+Camera:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2953443531628903081}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_ClearFlags: 1
+  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_projectionMatrixMode: 1
+  m_GateFitMode: 2
+  m_FOVAxisMode: 0
+  m_Iso: 200
+  m_ShutterSpeed: 0.005
+  m_Aperture: 16
+  m_FocusDistance: 10
+  m_FocalLength: 50
+  m_BladeCount: 5
+  m_Curvature: {x: 2, y: 11}
+  m_BarrelClipping: 0.25
+  m_Anamorphism: 0
+  m_SensorSize: {x: 36, y: 24}
+  m_LensShift: {x: 0, y: 0}
+  m_NormalizedViewPortRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  near clip plane: 0.01
+  far clip plane: 50000
+  field of view: 100
+  orthographic: 0
+  orthographic size: 5
+  m_Depth: -1
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingPath: -1
+  m_TargetTexture: {fileID: 0}
+  m_TargetDisplay: 0
+  m_TargetEye: 3
+  m_HDR: 1
+  m_AllowMSAA: 1
+  m_AllowDynamicResolution: 0
+  m_ForceIntoRT: 0
+  m_OcclusionCulling: 1
+  m_StereoConvergence: 10
+  m_StereoSeparation: 0.022
+--- !u!81 &908557958129858795
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2953443531628903081}
+  m_Enabled: 1
+--- !u!114 &233396450389861739
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2953443531628903081}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RenderShadows: 1
+  m_RequiresDepthTextureOption: 2
+  m_RequiresOpaqueTextureOption: 2
+  m_CameraType: 0
+  m_Cameras: []
+  m_RendererIndex: -1
+  m_VolumeLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  m_VolumeTrigger: {fileID: 0}
+  m_VolumeFrameworkUpdateModeOption: 2
+  m_RenderPostProcessing: 1
+  m_Antialiasing: 0
+  m_AntialiasingQuality: 2
+  m_StopNaN: 0
+  m_Dithering: 0
+  m_ClearDepth: 1
+  m_AllowXRRendering: 1
+  m_AllowHDROutput: 1
+  m_UseScreenCoordOverride: 0
+  m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_ScreenCoordScaleBias: {x: 0, y: 0, z: 0, w: 0}
+  m_RequiresDepthTexture: 0
+  m_RequiresColorTexture: 0
+  m_Version: 2
+  m_TaaSettings:
+    m_Quality: 3
+    m_FrameInfluence: 0.1
+    m_JitterScale: 1
+    m_MipBias: 0
+    m_VarianceClampScale: 0.9
+    m_ContrastAdaptiveSharpening: 0
+--- !u!114 &1684218235697631727
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2953443531628903081}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdb99a9e701f5d943bb5c42d76072f26, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mouseSensitivity: 2
+  verticalLookLimit: 90
+  invertY: 0
+  sensitivityCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  trickYawSensitivity: 0.3
+  lookSmoothing: 0.15
+  positionSmoothing: 12
+  enableSmoothing: 1
+  enableMotionPrediction: 1
+  baseFOV: 100
+  sprintFOVIncrease: 10
+  fovTransitionSpeed: 8
+  enableStrafeTilt: 1
+  maxTiltAngle: 5
+  tiltSpeed: 9
+  tiltReturnSpeed: 6
+  tiltSpringDamping: 0.7
+  tiltResponseCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  enableWallJumpTilt: 1
+  wallJumpMaxTiltAngle: 10
+  wallJumpTiltSpeed: 25
+  wallJumpTiltReturnSpeed: 8
+  wallJumpTiltCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  wallJumpTiltDuration: 0.4
+  enableWallJumpPitch: 1
+  wallJumpMaxPitchAngle: 3
+  enableDynamicWallTilt: 1
+  dynamicTiltMaxAngle: 12
+  dynamicTiltSpeed: 20
+  dynamicTiltReturnSpeed: 15
+  screenCenterDeadzone: 0.2
+  showDynamicTiltDebug: 0
+  enableAerialFreestyle: 1
+  middleClickTrickJump: 1
+  maxTrickRotationSpeed: 360
+  trickInputSensitivity: 3.5
+  trickRotationSmoothing: 0.25
+  initialFlipBurstMultiplier: 2.5
+  initialBurstDuration: 0.15
+  enableAnalogSpeedControl: 1
+  speedControlResponsiveness: 8
+  minInputThreshold: 0.01
+  enableDiagonalRoll: 1
+  rollStrength: 0.35
+  trickFOVBoost: 15
+  trickFOVSpeed: 12
+  cameraReturnDuration: 0.3
+  reconciliationCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  minAirTimeForTricks: 0.15
+  enableTrickMotionBlur: 1
+  showTrickUI: 1
+  cleanLandingThreshold: 25
+  enableTimeDilation: 1
+  trickTimeScale: 0.5
+  timeDilationRampIn: 0.4
+  timeDilationRampOut: 0.15
+  landingAnticipationDistance: 3
+  enableLandingImpact: 1
+  landingCompressionAmount: 25
+  landingSpringStiffness: 100
+  landingSpringDamping: 5
+  minFallDistanceForImpact: 320
+  maxFallDistanceForImpact: 1600
+  fallDistanceScaleCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  enableLandingTilt: 1
+  maxLandingTiltAngle: 3
+  enableIdleSway: 1
+  idleSwayAmount: 0.02
+  idleSwaySpeed: 1.5
+--- !u!1 &6580553730374310445
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5768776682578304047}
+  - component: {fileID: 6065162365163484627}
+  - component: {fileID: 9148255036440693033}
+  - component: {fileID: 8921672188979612306}
+  - component: {fileID: 7905420967956635234}
+  m_Layer: 0
+  m_Name: Player
+  m_TagString: Player
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5768776682578304047
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6580553730374310445}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0, y: 2.11, z: -0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3930516964321116455}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!143 &6065162365163484627
+CharacterController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6580553730374310445}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Height: 320
+  m_Radius: 75
+  m_SlopeLimit: 55
+  m_StepOffset: 65
+  m_SkinWidth: 8
+  m_MinMoveDistance: 0.01
+  m_Center: {x: 0, y: 160, z: 0}
+--- !u!114 &9148255036440693033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6580553730374310445}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e77fd68c80a99c43b5974c4dc1d8c7a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  config: {fileID: 11400000, guid: 5fa053a82e5fb5445a19390631b78ab6, type: 2}
+  controller: {fileID: 6065162365163484627}
+  cameraTransform: {fileID: 3930516964321116455}
+  bleedOutSpeedMultiplier: 0.1
+  bleedOutInputSmoothing: 8
+  inputSmoothTime: 0.1
+  moveSpeed: 900
+  sprintMultiplier: 1.98
+  groundAcceleration: 2400
+  groundFriction: 1800
+  stopSpeed: 200
+  enableAccelerationSystem: 1
+  maxHorizontalSpeed: 30000
+  preserveMomentumAboveBaseSpeed: 1
+  airControlStrength: 0.8
+  airAcceleration: 1500
+  maxAirSpeed: 30000
+  preserveHighSpeedMomentum: 1
+  highSpeedThreshold: 960
+  jumpForce: 2800
+  doubleJumpForce: 1700
+  maxAirJumps: 1
+  enableTrickJumpBoost: 0
+  trickJumpVerticalBoost: 0
+  trickJumpForwardBoost: 135
+  trickJumpSpeedScaling: 0.2
+  trickJumpMaxSpeedBonus: 90
+  trickJumpSpeedThreshold: 150
+  showTrickJumpDebug: 1
+  coyoteTime: 0.225
+  jumpBufferTime: 0.12
+  enableVariableJumpHeight: 1
+  jumpCutMultiplier: 0.5
+  gravity: -7000
+  terminalVelocity: 25000
+  descendForce: 50000
+  slopeForce: 10000
+  maxSlopeAngle: 55
+  enableSlopeMomentum: 1
+  slopeAccelerationMultiplier: 3
+  uphillFrictionMultiplier: 0
+  minimumSlopeAngle: 10
+  rampJumpBonus: 0.25
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 1
+  groundCheckDistance: 220
+  playerHeight: 320
+  playerRadius: 75
+  enableMovingPlatformSupport: 0
+  maxStepHeight: 100
+  stairCheckDistance: 300
+  enableStairClimbingAssist: 1
+  smoothStepClimbing: 1
+  stairClimbSpeedMultiplier: 1
+  groundedHysteresisSeconds: 0.02
+  groundedDebounceFrames: 1
+  showGroundingDebug: 0
+  enableAntiSinkPrediction: 0
+  jumpGroundSuppressSeconds: 0
+  fallingAnimationDelay: 0
+  stepOffsetHeightPercent: 0.5
+  groundPredictionDistance: 350
+  groundClearance: 0.5
+--- !u!114 &8921672188979612306
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6580553730374310445}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 962e69c7272e38147aee7684c7bd6587, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  config: {fileID: 11400000, guid: b1e4b7d81a3f1af48844c5114256b458, type: 2}
+  movement: {fileID: 9148255036440693033}
+  controller: {fileID: 6065162365163484627}
+  cameraTransform: {fileID: 3930516964321116455}
+  layeredHandAnimationController: {fileID: 0}
+  slideParticles: {fileID: 0}
+  diveParticles: {fileID: 0}
+  holdToCrouch: 1
+  holdToSlide: 1
+  standingHeight: 320
+  crouchedHeight: 140
+  standingCameraY: 310
+  crouchedCameraY: 130
+  heightLerpSpeed: 1280
+  obstructionMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  enableSlide: 1
+  slideMinStartSpeed: 0
+  slideAutoStandSpeed: 25
+  slideGravityAccel: 7500
+  slideFrictionFlat: 1.5
+  slideSteerAcceleration: 1200
+  slideMaxSpeed: 15000
+  uphillFrictionMultiplier: 1.8
+  stickToGroundVelocity: 0
+  momentumPreservation: 1
+  slideGroundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  slideGroundCheckDistance: 640
+  slideGroundCoyoteTime: 0.225
+  slidingGravity: -2250
+  slidingTerminalDownVelocity: 8000
+  steerAccelBySpeedCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  frictionBySpeedCurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  steerDriftLerp: 0.85
+  slideFOVKick: 1
+  slideFOVAdd: 15
+  slideAudioEnabled: 1
+  diveAudioEnabled: 1
+  slideParticlesEnabled: 1
+  enableTacticalDive: 1
+  diveForwardForce: 3000
+  diveUpwardForce: 3500
+  diveProneDuration: 0.8
+  diveMinSprintSpeed: 960
+  diveSlideFriction: 5400
+  enableAutoSlide: 0
+  autoSlideOnLandingWhileCrouched: 1
+  landingSlopeAngleForAutoSlide: 1
+  autoResumeSlideFromMomentum: 1
+  landingMomentumResumeWindow: 3
+  landingMomentumDamping: 1
+  enableLandingSpeedCap: 0
+  landingMaxPreservedSpeed: 5000
+  rampLaunchEnabled: 0
+  rampMinSpeed: 420
+  rampExtraUpBoost: 0.15
+  showDebugVisualization: 1
+  verboseDebugLogging: 1
+  debugGroundDetection: 1
+  enableSlideExitMomentum: 1
+  slideExitMomentumMultiplier: 1
+  slideExitMinSpeed: 100
+  enableSmoothWallSliding: 1
+  wallSlideMaxIterations: 3
+  wallSlideSpeedPreservation: 0.95
+  wallSlideMinAngle: 45
+  wallSlideSkinMultiplier: 1.15
+  showWallSlideDebug: 0
+  raycastManager: {fileID: 0}
+--- !u!114 &7905420967956635234
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6580553730374310445}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bcc25f12e84a6d148b51f0df1ac6dc14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  slamDownwardForce: 5000
+  landingSpeedMultiplier: 3.5
+  minimumLandingSpeed: 2000
+  maxSpeedForBoost: 15000
+  minFallSpeedForSlam: 500
+  slamCooldown: 0.5
+  enableFeedback: 1
+  showDebugLogs: 1
