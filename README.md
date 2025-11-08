@@ -13,6 +13,7 @@
 The **Unity AI Scene Builder Tool** is a revolutionary system that enables real-time text-to-world generation in Unity. Create complete 3D scenes, apply production-quality materials, optimize performance, and design entire levels using natural language commands.
 
 **Key Features:**
+- 🏰 **Luxury Villa Generator** - 400+ object Mediterranean villa in 3 minutes (NEW!)
 - 🌍 **Complete World Generation** - Generate entire playable worlds in seconds (10 biome types)
 - 🎨 **Materials System** - 14 predefined PBR materials + custom color/metallic/smoothness/emission
 - 🏗️ **Hierarchy System** - Organized scene structure + 60x performance optimization via mesh combining
@@ -59,6 +60,34 @@ The **Unity AI Scene Builder Tool** is a revolutionary system that enables real-
 
 ---
 
+## 🏰 Feature Showcase: Luxury Villa Generator
+
+**One command. Three minutes. Four hundred objects.**
+
+```powershell
+.\build-luxury-villa.ps1
+```
+
+### What You Get
+- ✅ **3-Story Structure** - Ground floor, first floor, roof terrace
+- ✅ **8+ Furnished Rooms** - Living, dining, kitchen, 3 bedrooms, penthouse
+- ✅ **Architectural Details** - 20+ cornices, 8 pilasters, 12 shutters
+- ✅ **30+ Light Sources** - Chandeliers, lamps, emissive elements
+- ✅ **Complete Gardens** - Trees, fountain, pathways, hedges
+- ✅ **Balconies & Stairs** - 2 balconies with railings, 2 staircases
+- ✅ **PBR Materials** - Realistic glass, wood, metal, stone
+
+### Technical Achievement
+- **400+ Objects** in hierarchical structure
+- **7 Custom Functions** for reusable components (windows, doors, columns, etc.)
+- **30+ Emissive Lights** with HDR emission
+- **Professional Organization** with 10+ nested groups
+- **Complete Documentation** - 13KB comprehensive guide
+
+**See:** `LUXURY_VILLA_GUIDE.md` for complete details
+
+---
+
 ## 💡 Usage Examples
 
 ### Building 21 - Call of Duty DMZ Replica (NEW!)
@@ -89,6 +118,16 @@ New-World -biome "SciFi" -worldSize 200 -density 80
 
 # Available biomes: Forest, Desert, City, Medieval, SciFi, 
 # Fantasy, Underwater, Arctic, Jungle, Wasteland
+```
+
+### Build Luxury Villa (NEW! 🏰)
+```powershell
+# Generate a 3-story Mediterranean villa with 400+ objects
+.\build-luxury-villa.ps1
+
+# Features: 8 rooms, balconies, gardens, fountain, lighting
+# Time: 2-3 minutes | Objects: 400+
+# See: LUXURY_VILLA_GUIDE.md for details
 ```
 
 ### Create Individual Objects
@@ -136,6 +175,7 @@ $nearby = Find-Objects -radius 50 -position @{ x=0; y=0; z=0 }
 
 ## 📖 Documentation
 
+### Getting Started
 ### Featured Projects
 - **[BUILDING21_GUIDE.md](UnityMCP/BUILDING21_GUIDE.md)** - Call of Duty B21 replica (500+ objects, 8 levels) (NEW!)
 - **[BUILDING21_VISUAL_MAP.md](UnityMCP/BUILDING21_VISUAL_MAP.md)** - ASCII floor maps and navigation (NEW!)
@@ -144,7 +184,14 @@ $nearby = Find-Objects -radius 50 -position @{ x=0; y=0; z=0 }
 ### System Documentation
 - **[WORLD_GENERATION_GUIDE.md](UnityMCP/WORLD_GENERATION_GUIDE.md)** - Complete world generation guide
 - **[V2_QUICK_REFERENCE.md](UnityMCP/V2_QUICK_REFERENCE.md)** - Essential commands (2-minute read)
+- **[VILLA_QUICK_START.md](UnityMCP/VILLA_QUICK_START.md)** - Build a villa in 3 minutes (NEW! 🏰)
+
+### Complete Guides
 - **[V2_DOCUMENTATION.md](UnityMCP/V2_DOCUMENTATION.md)** - Complete system guide (30-minute read)
+- **[WORLD_GENERATION_GUIDE.md](UnityMCP/WORLD_GENERATION_GUIDE.md)** - Complete world generation guide
+- **[LUXURY_VILLA_GUIDE.md](UnityMCP/LUXURY_VILLA_GUIDE.md)** - Detailed villa architecture guide (NEW! 🏰)
+
+### Technical References
 - **[V2_IMPLEMENTATION_SUMMARY.md](UnityMCP/V2_IMPLEMENTATION_SUMMARY.md)** - Technical deep dive
 - **[UNITY_MCP_CREATION_GUIDE.md](UnityMCP/UNITY_MCP_CREATION_GUIDE.md)** - Original creation patterns
 
