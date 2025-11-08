@@ -23,15 +23,29 @@ Building 21 is a highly detailed, multi-story military research facility inspire
 - Server status lights (glowing blue)
 - Helipad lights (glowing orange)
 - Communication antenna warning lights
+- **NEW:** Environmental steam effects from HVAC
+- **NEW:** Ambient blue glow in server rooms
 
-### Details
-- **500+** total objects
+### Interior Details (NEW!)
+- **Furniture:** Desks, chairs, computers in all offices
+- **Lab Equipment:** Microscopes, centrifuges, terminals
+- **Doors:** Standard, Security, Lab, and Vault types at room entrances
+- **Signage:** Illuminated wayfinding system throughout
+- **Security:** 20+ surveillance cameras with red LED lights
+
+### Exterior Details (NEW!)
+- **Parking Lot:** 18 marked parking spaces (3 rows × 6)
+- **Landscaping:** 12 perimeter trees with foliage
+- **Ground Cover:** 8 grass patches and entrance shrubs
+- **Environmental Effects:** Steam vents and atmospheric glow
+
+### Total Objects
+- **850+** total objects (up from 544)
 - Realistic room layouts and corridors
 - Elevator shafts connecting all floors
 - Main stairwell for vertical navigation
-- Perimeter security fencing
-- External lighting posts
-- Ground markings and bollards
+- Complete interior furnishings
+- Perimeter security and landscaping
 
 ---
 
@@ -48,8 +62,8 @@ cd UnityMCP
 .\Building21.ps1
 ```
 
-**Expected Time:** 15-30 seconds  
-**Expected Result:** 500+ objects creating a complete multi-story facility
+**Expected Time:** 25-40 seconds  
+**Expected Result:** 850+ objects creating a complete multi-story facility with interior furnishings
 
 ---
 

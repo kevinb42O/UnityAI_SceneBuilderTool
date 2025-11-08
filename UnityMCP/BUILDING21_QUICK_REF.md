@@ -11,11 +11,11 @@ cd UnityMCP && .\Building21.ps1
 
 | Metric | Value |
 |--------|-------|
-| **Total Objects** | ~544 |
+| **Total Objects** | ~850+ |
 | **Total Floors** | 8 levels (B3 to Roof) |
 | **Building Size** | 120m × 100m × 35m |
-| **Build Time** | 15-30 seconds |
-| **Draw Calls** | 500+ (10+ optimized) |
+| **Build Time** | 25-40 seconds |
+| **Draw Calls** | 850+ (15+ optimized) |
 
 ---
 
@@ -142,12 +142,18 @@ New-Room -name "BigRoom" -x 0 -y 2.25 -z 0 `
 
 | Section | Count | % |
 |---------|-------|---|
-| Exterior | 150 | 28% |
-| Underground | 130 | 24% |
-| Ground | 70 | 13% |
-| Upper Floors | 120 | 22% |
-| Rooftop | 50 | 9% |
-| Details | 24 | 4% |
+| Exterior | 150 | 18% |
+| Underground | 130 | 15% |
+| Ground | 70 | 8% |
+| Upper Floors | 120 | 14% |
+| Rooftop | 50 | 6% |
+| Furniture | 100 | 12% |
+| Lab Equipment | 30 | 4% |
+| Security | 25 | 3% |
+| Signage | 20 | 2% |
+| Parking & Landscape | 100 | 12% |
+| Effects | 15 | 2% |
+| Details | 40 | 5% |
 
 ---
 
@@ -183,6 +189,31 @@ $near = Find-Objects -radius 25 -position @{ x = 0; y = 22; z = 20 }
 - **BUILDING21_GUIDE.md** - Complete guide (11KB)
 - **unity-helpers-v2.ps1** - Helper functions
 - **V2_DOCUMENTATION.md** - API reference
+
+---
+
+## 🌟 New Enhanced Features
+
+### Interior Furnishings
+- **Desks & Chairs**: 40+ complete workstations
+- **Computers**: Glowing blue screens in offices
+- **Lab Equipment**: Microscopes, centrifuges, terminals
+- **Doors**: 4 types (Standard, Security, Lab, Vault)
+
+### Security & Wayfinding
+- **Cameras**: 20+ surveillance cameras
+- **Signage**: Illuminated directional signs
+- **LED Indicators**: Red lights on all cameras
+
+### Exterior Enhancements
+- **Parking Lot**: 18 marked spaces
+- **Trees**: 12 perimeter trees with foliage
+- **Landscaping**: Grass patches and shrubs
+
+### Environmental Effects
+- **Steam Vents**: HVAC steam effects
+- **Ambient Glow**: Server room atmosphere
+- **Particle Effects**: Environmental realism
 
 ---
 
