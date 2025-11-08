@@ -186,7 +186,85 @@ namespace UnityMCP
             }
 
             // Generate hills/elevation for certain biomes
-            if (settings.biome == BiomeType.Forest || settings.biome == BiomeType.Fantasy)
+            if (settings.biome == BiomeType.Forest)
+            {
+                // Realistic forest terrain with gentle rolling hills
+                int hillCount = Mathf.Max(4, settings.density / 20);
+                for (int i = 0; i < hillCount; i++)
+                {
+                    GameObject hill = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    hill.name = $"Hill_{i}";
+                    hill.transform.SetParent(terrainGroup.transform);
+                    
+                    float x = UnityEngine.Random.Range(-size / 2f, size / 2f);
+                    float z = UnityEngine.Random.Range(-size / 2f, size / 2f);
+                    float scale = UnityEngine.Random.Range(12f, 30f);
+                    
+                    // Gentler, more natural hills
+                    hill.transform.localPosition = new Vector3(x, -scale / 2.5f, z);
+                    hill.transform.localScale = new Vector3(scale * 1.2f, scale / 2.2f, scale);
+                    
+                    Undo.RegisterCreatedObjectUndo(hill, "Generate Terrain");
+                    objectCount++;
+
+                    // Apply enhanced ground material with slight color variation
+                    var hillRenderer = hill.GetComponent<Renderer>();
+                    if (hillRenderer != null && renderer != null)
+                    {
+                        Material hillMat = CreateURPMaterial();
+                        // Vary the green slightly for each hill
+                        hillMat.color = new Color(
+                            0.18f + UnityEngine.Random.Range(-0.03f, 0.03f),
+                            0.45f + UnityEngine.Random.Range(-0.05f, 0.05f),
+                            0.18f + UnityEngine.Random.Range(-0.03f, 0.03f)
+                        );
+                        hillMat.SetFloat("_Metallic", 0.0f);
+                        hillMat.SetFloat("_Glossiness", 0.2f);
+                        hillRenderer.sharedMaterial = hillMat;
+                        EditorUtility.SetDirty(hillRenderer);
+                    }
+                }
+                
+                // Add some rock outcroppings on hills
+                int outcropCount = Mathf.Max(2, settings.density / 40);
+                for (int i = 0; i < outcropCount; i++)
+                {
+                    GameObject outcrop = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    outcrop.name = $"RockOutcrop_{i}";
+                    outcrop.transform.SetParent(terrainGroup.transform);
+                    
+                    float x = UnityEngine.Random.Range(-size / 2f, size / 2f);
+                    float z = UnityEngine.Random.Range(-size / 2f, size / 2f);
+                    float height = UnityEngine.Random.Range(2f, 6f);
+                    
+                    outcrop.transform.localPosition = new Vector3(x, height * 0.5f, z);
+                    outcrop.transform.localScale = new Vector3(
+                        UnityEngine.Random.Range(3f, 8f),
+                        height,
+                        UnityEngine.Random.Range(3f, 8f)
+                    );
+                    outcrop.transform.localRotation = Quaternion.Euler(
+                        UnityEngine.Random.Range(-10f, 10f),
+                        UnityEngine.Random.Range(0f, 360f),
+                        UnityEngine.Random.Range(-10f, 10f)
+                    );
+                    
+                    Undo.RegisterCreatedObjectUndo(outcrop, "Generate Terrain");
+                    objectCount++;
+                    
+                    var outcropRenderer = outcrop.GetComponent<Renderer>();
+                    if (outcropRenderer != null)
+                    {
+                        Material rockMat = CreateURPMaterial();
+                        rockMat.color = new Color(0.35f, 0.35f, 0.35f);
+                        rockMat.SetFloat("_Metallic", 0.0f);
+                        rockMat.SetFloat("_Glossiness", 0.15f);
+                        outcropRenderer.sharedMaterial = rockMat;
+                        EditorUtility.SetDirty(outcropRenderer);
+                    }
+                }
+            }
+            else if (settings.biome == BiomeType.Fantasy)
             {
                 int hillCount = Mathf.Max(3, settings.density / 25);
                 for (int i = 0; i < hillCount; i++)
@@ -275,60 +353,669 @@ namespace UnityMCP
         }
 
         /// <summary>
-        /// Generate forest biome
+        /// Tree species data for realistic forest generation
+        /// </summary>
+        private enum TreeSpecies
+        {
+            Oak,        // Broad, spreading canopy
+            Pine,       // Tall, conical evergreen
+            Birch,      // Slender, white bark
+            Maple       // Medium height, rounded canopy
+        }
+
+        private class TreeData
+        {
+            public TreeSpecies species;
+            public float trunkHeight;
+            public float trunkDiameter;
+            public float canopySize;
+            public Color barkColor;
+            public Color foliageColor;
+            public float roughness;
+            public bool isEvergreen;
+        }
+
+        /// <summary>
+        /// Generate extremely detailed, realistic forest biome
+        /// Based on real temperate deciduous/mixed forest ecosystems
         /// </summary>
         private static int GenerateForest(GameObject parent, WorldSettings settings)
         {
             int objectCount = 0;
             int size = settings.worldSize;
-            int treeCount = settings.density;
+            int baseDensity = settings.density;
 
-            // Create trees
-            for (int i = 0; i < treeCount; i++)
+            // Create forest layers group
+            GameObject canopyLayer = new GameObject("CanopyLayer");
+            canopyLayer.transform.SetParent(parent.transform);
+            Undo.RegisterCreatedObjectUndo(canopyLayer, "Generate Forest");
+
+            GameObject understoryLayer = new GameObject("UnderstoryLayer");
+            understoryLayer.transform.SetParent(parent.transform);
+            Undo.RegisterCreatedObjectUndo(understoryLayer, "Generate Forest");
+
+            GameObject forestFloor = new GameObject("ForestFloor");
+            forestFloor.transform.SetParent(parent.transform);
+            Undo.RegisterCreatedObjectUndo(forestFloor, "Generate Forest");
+
+            // === CANOPY LAYER: Mature Trees ===
+            // Realistic distribution: 60-150 trees per 100x100 units (depending on density)
+            int matureTreeCount = Mathf.RoundToInt(baseDensity * 0.8f);
+            
+            // Create forest clusters (trees naturally group in clusters)
+            int clusterCount = Mathf.Max(3, matureTreeCount / 10);
+            Vector3[] clusterCenters = new Vector3[clusterCount];
+            
+            for (int i = 0; i < clusterCount; i++)
+            {
+                clusterCenters[i] = new Vector3(
+                    UnityEngine.Random.Range(-size / 2f, size / 2f),
+                    0,
+                    UnityEngine.Random.Range(-size / 2f, size / 2f)
+                );
+            }
+
+            // Generate mature trees with clustering
+            for (int i = 0; i < matureTreeCount; i++)
+            {
+                // Choose tree species with realistic distribution
+                TreeSpecies species = ChooseTreeSpecies();
+                TreeData treeData = GetTreeData(species, TreeAge.Mature);
+                
+                // Position with clustering behavior
+                Vector3 clusterCenter = clusterCenters[UnityEngine.Random.Range(0, clusterCount)];
+                float clusterRadius = size / (clusterCount * 1.5f);
+                float offsetX = UnityEngine.Random.Range(-clusterRadius, clusterRadius);
+                float offsetZ = UnityEngine.Random.Range(-clusterRadius, clusterRadius);
+                
+                // Add some randomness to avoid perfect clusters
+                if (UnityEngine.Random.value > 0.7f)
+                {
+                    offsetX = UnityEngine.Random.Range(-size / 2f, size / 2f);
+                    offsetZ = UnityEngine.Random.Range(-size / 2f, size / 2f);
+                }
+                
+                float x = clusterCenter.x + offsetX;
+                float z = clusterCenter.z + offsetZ;
+                
+                // Ensure within bounds
+                x = Mathf.Clamp(x, -size / 2f, size / 2f);
+                z = Mathf.Clamp(z, -size / 2f, size / 2f);
+
+                objectCount += CreateDetailedTree(canopyLayer, species, treeData, x, z, i);
+            }
+
+            // === UNDERSTORY LAYER: Young Trees, Bushes, Ferns ===
+            int understoryCount = Mathf.RoundToInt(baseDensity * 1.5f);
+            
+            for (int i = 0; i < understoryCount; i++)
             {
                 float x = UnityEngine.Random.Range(-size / 2f, size / 2f);
                 float z = UnityEngine.Random.Range(-size / 2f, size / 2f);
-
-                // Tree trunk
-                GameObject trunk = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                trunk.name = $"Tree_{i}_Trunk";
-                trunk.transform.SetParent(parent.transform);
-                trunk.transform.localPosition = new Vector3(x, 2.5f, z);
-                trunk.transform.localScale = new Vector3(0.5f, 2.5f, 0.5f);
-                Undo.RegisterCreatedObjectUndo(trunk, "Generate Forest");
-                objectCount++;
-
-                // Apply brown material
-                var trunkRenderer = trunk.GetComponent<Renderer>();
-                if (trunkRenderer != null)
+                
+                float rand = UnityEngine.Random.value;
+                
+                if (rand < 0.3f)
                 {
-                    Material trunkMat = CreateURPMaterial();
-                    trunkMat.color = new Color(0.4f, 0.25f, 0.1f);
-                    trunkRenderer.sharedMaterial = trunkMat;
-                    EditorUtility.SetDirty(trunkRenderer);
+                    // Young sapling
+                    TreeSpecies species = ChooseTreeSpecies();
+                    TreeData treeData = GetTreeData(species, TreeAge.Young);
+                    objectCount += CreateDetailedTree(understoryLayer, species, treeData, x, z, i);
                 }
-
-                // Tree foliage
-                GameObject foliage = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                foliage.name = $"Tree_{i}_Foliage";
-                foliage.transform.SetParent(parent.transform);
-                foliage.transform.localPosition = new Vector3(x, 6.5f, z);
-                foliage.transform.localScale = new Vector3(4f, 4f, 4f);
-                Undo.RegisterCreatedObjectUndo(foliage, "Generate Forest");
-                objectCount++;
-
-                // Apply green material
-                var foliageRenderer = foliage.GetComponent<Renderer>();
-                if (foliageRenderer != null)
+                else if (rand < 0.7f)
                 {
-                    Material foliageMat = CreateURPMaterial();
-                    foliageMat.color = new Color(0.1f, 0.5f, 0.1f);
-                    foliageRenderer.sharedMaterial = foliageMat;
-                    EditorUtility.SetDirty(foliageRenderer);
+                    // Bush/shrub
+                    objectCount += CreateBush(understoryLayer, x, z, i);
+                }
+                else
+                {
+                    // Fern cluster
+                    objectCount += CreateFernCluster(understoryLayer, x, z, i);
                 }
             }
 
+            // === FOREST FLOOR: Fallen Logs, Mushrooms, Rocks, Leaf Litter ===
+            int floorDetailCount = Mathf.RoundToInt(baseDensity * 0.8f);
+            
+            for (int i = 0; i < floorDetailCount; i++)
+            {
+                float x = UnityEngine.Random.Range(-size / 2f, size / 2f);
+                float z = UnityEngine.Random.Range(-size / 2f, size / 2f);
+                
+                float rand = UnityEngine.Random.value;
+                
+                if (rand < 0.25f)
+                {
+                    // Fallen log
+                    objectCount += CreateFallenLog(forestFloor, x, z, i);
+                }
+                else if (rand < 0.45f)
+                {
+                    // Mushroom cluster
+                    objectCount += CreateMushroomCluster(forestFloor, x, z, i);
+                }
+                else if (rand < 0.70f)
+                {
+                    // Moss-covered rock
+                    objectCount += CreateMossyRock(forestFloor, x, z, i);
+                }
+                else
+                {
+                    // Small ground cover (leaf litter representation)
+                    objectCount += CreateGroundCover(forestFloor, x, z, i);
+                }
+            }
+
+            // === SPECIAL FEATURES: Ancient Trees (1-3 per forest) ===
+            int ancientTreeCount = Mathf.Max(1, matureTreeCount / 30);
+            
+            for (int i = 0; i < ancientTreeCount; i++)
+            {
+                TreeSpecies species = (TreeSpecies)UnityEngine.Random.Range(0, 2); // Oak or Pine for ancient
+                TreeData treeData = GetTreeData(species, TreeAge.Ancient);
+                
+                float x = UnityEngine.Random.Range(-size / 3f, size / 3f);
+                float z = UnityEngine.Random.Range(-size / 3f, size / 3f);
+                
+                objectCount += CreateDetailedTree(canopyLayer, species, treeData, x, z, 1000 + i);
+            }
+
             return objectCount;
+        }
+
+        /// <summary>
+        /// Tree age categories affecting size and appearance
+        /// </summary>
+        private enum TreeAge
+        {
+            Young,      // Saplings, small trees
+            Mature,     // Full-grown trees
+            Ancient     // Old-growth giants
+        }
+
+        /// <summary>
+        /// Choose tree species with realistic distribution
+        /// Oak: 35%, Pine: 25%, Birch: 20%, Maple: 20%
+        /// </summary>
+        private static TreeSpecies ChooseTreeSpecies()
+        {
+            float rand = UnityEngine.Random.value;
+            if (rand < 0.35f) return TreeSpecies.Oak;
+            if (rand < 0.60f) return TreeSpecies.Pine;
+            if (rand < 0.80f) return TreeSpecies.Birch;
+            return TreeSpecies.Maple;
+        }
+
+        /// <summary>
+        /// Get realistic tree data based on species and age
+        /// </summary>
+        private static TreeData GetTreeData(TreeSpecies species, TreeAge age)
+        {
+            TreeData data = new TreeData { species = species };
+            
+            // Age multiplier
+            float ageMultiplier = age == TreeAge.Young ? 0.4f : (age == TreeAge.Ancient ? 1.8f : 1.0f);
+            
+            switch (species)
+            {
+                case TreeSpecies.Oak:
+                    data.trunkHeight = 8.0f * ageMultiplier;
+                    data.trunkDiameter = 1.2f * ageMultiplier;
+                    data.canopySize = 8.0f * ageMultiplier;
+                    data.barkColor = new Color(0.35f, 0.25f, 0.15f); // Dark brown
+                    data.foliageColor = new Color(0.15f, 0.45f, 0.12f); // Deep green
+                    data.roughness = 0.95f;
+                    data.isEvergreen = false;
+                    break;
+                    
+                case TreeSpecies.Pine:
+                    data.trunkHeight = 12.0f * ageMultiplier;
+                    data.trunkDiameter = 0.8f * ageMultiplier;
+                    data.canopySize = 5.0f * ageMultiplier;
+                    data.barkColor = new Color(0.3f, 0.2f, 0.12f); // Reddish brown
+                    data.foliageColor = new Color(0.08f, 0.35f, 0.08f); // Dark pine green
+                    data.roughness = 0.9f;
+                    data.isEvergreen = true;
+                    break;
+                    
+                case TreeSpecies.Birch:
+                    data.trunkHeight = 10.0f * ageMultiplier;
+                    data.trunkDiameter = 0.6f * ageMultiplier;
+                    data.canopySize = 6.0f * ageMultiplier;
+                    data.barkColor = new Color(0.95f, 0.95f, 0.92f); // White with slight yellow
+                    data.foliageColor = new Color(0.25f, 0.55f, 0.20f); // Bright green
+                    data.roughness = 0.6f;
+                    data.isEvergreen = false;
+                    break;
+                    
+                case TreeSpecies.Maple:
+                    data.trunkHeight = 9.0f * ageMultiplier;
+                    data.trunkDiameter = 1.0f * ageMultiplier;
+                    data.canopySize = 7.5f * ageMultiplier;
+                    data.barkColor = new Color(0.4f, 0.3f, 0.2f); // Gray-brown
+                    data.foliageColor = new Color(0.20f, 0.50f, 0.15f); // Medium green
+                    data.roughness = 0.85f;
+                    data.isEvergreen = false;
+                    break;
+            }
+            
+            return data;
+        }
+
+        /// <summary>
+        /// Create a detailed, realistic tree with species-specific characteristics
+        /// </summary>
+        private static int CreateDetailedTree(GameObject parent, TreeSpecies species, TreeData data, float x, float z, int index)
+        {
+            int objectCount = 0;
+            
+            // Create tree group
+            GameObject treeGroup = new GameObject($"{species}Tree_{index}");
+            treeGroup.transform.SetParent(parent.transform);
+            Undo.RegisterCreatedObjectUndo(treeGroup, "Generate Forest");
+            
+            // === TRUNK ===
+            GameObject trunk = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            trunk.name = "Trunk";
+            trunk.transform.SetParent(treeGroup.transform);
+            trunk.transform.localPosition = new Vector3(x, data.trunkHeight / 2f, z);
+            trunk.transform.localScale = new Vector3(data.trunkDiameter, data.trunkHeight / 2f, data.trunkDiameter);
+            
+            // Add slight taper (trees narrow at top)
+            trunk.transform.localScale = new Vector3(
+                data.trunkDiameter * 1.1f,
+                data.trunkHeight / 2f,
+                data.trunkDiameter * 1.1f
+            );
+            
+            Undo.RegisterCreatedObjectUndo(trunk, "Generate Forest");
+            objectCount++;
+            
+            // Apply realistic bark material
+            var trunkRenderer = trunk.GetComponent<Renderer>();
+            if (trunkRenderer != null)
+            {
+                Material barkMat = CreateURPMaterial();
+                barkMat.color = data.barkColor;
+                barkMat.SetFloat("_Metallic", 0.0f);
+                barkMat.SetFloat("_Glossiness", 1.0f - data.roughness); // Convert roughness to smoothness
+                trunkRenderer.sharedMaterial = barkMat;
+                EditorUtility.SetDirty(trunkRenderer);
+            }
+            
+            // === CANOPY ===
+            // Different canopy shapes for different species
+            GameObject canopy;
+            if (species == TreeSpecies.Pine)
+            {
+                // Conical canopy for evergreens (3 stacked spheres)
+                for (int i = 0; i < 3; i++)
+                {
+                    canopy = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    canopy.name = $"Canopy_{i}";
+                    canopy.transform.SetParent(treeGroup.transform);
+                    
+                    float heightOffset = data.trunkHeight + (i * data.canopySize * 0.3f);
+                    float sizeScale = data.canopySize * (1.0f - i * 0.25f); // Smaller at top
+                    
+                    canopy.transform.localPosition = new Vector3(x, heightOffset, z);
+                    canopy.transform.localScale = new Vector3(sizeScale, sizeScale * 0.8f, sizeScale);
+                    
+                    Undo.RegisterCreatedObjectUndo(canopy, "Generate Forest");
+                    objectCount++;
+                    
+                    var canopyRenderer = canopy.GetComponent<Renderer>();
+                    if (canopyRenderer != null)
+                    {
+                        Material foliageMat = CreateURPMaterial();
+                        foliageMat.color = data.foliageColor;
+                        foliageMat.SetFloat("_Metallic", 0.0f);
+                        foliageMat.SetFloat("_Glossiness", 0.3f);
+                        canopyRenderer.sharedMaterial = foliageMat;
+                        EditorUtility.SetDirty(canopyRenderer);
+                    }
+                }
+            }
+            else if (species == TreeSpecies.Oak)
+            {
+                // Broad, spreading canopy (flattened sphere)
+                canopy = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                canopy.name = "Canopy";
+                canopy.transform.SetParent(treeGroup.transform);
+                canopy.transform.localPosition = new Vector3(x, data.trunkHeight + data.canopySize * 0.3f, z);
+                canopy.transform.localScale = new Vector3(data.canopySize, data.canopySize * 0.6f, data.canopySize);
+                
+                Undo.RegisterCreatedObjectUndo(canopy, "Generate Forest");
+                objectCount++;
+                
+                var canopyRenderer = canopy.GetComponent<Renderer>();
+                if (canopyRenderer != null)
+                {
+                    Material foliageMat = CreateURPMaterial();
+                    foliageMat.color = data.foliageColor;
+                    foliageMat.SetFloat("_Metallic", 0.0f);
+                    foliageMat.SetFloat("_Glossiness", 0.25f);
+                    canopyRenderer.sharedMaterial = foliageMat;
+                    EditorUtility.SetDirty(canopyRenderer);
+                }
+            }
+            else
+            {
+                // Rounded canopy (Birch, Maple)
+                canopy = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                canopy.name = "Canopy";
+                canopy.transform.SetParent(treeGroup.transform);
+                canopy.transform.localPosition = new Vector3(x, data.trunkHeight + data.canopySize * 0.4f, z);
+                canopy.transform.localScale = new Vector3(data.canopySize, data.canopySize * 0.85f, data.canopySize);
+                
+                Undo.RegisterCreatedObjectUndo(canopy, "Generate Forest");
+                objectCount++;
+                
+                var canopyRenderer = canopy.GetComponent<Renderer>();
+                if (canopyRenderer != null)
+                {
+                    Material foliageMat = CreateURPMaterial();
+                    foliageMat.color = data.foliageColor;
+                    foliageMat.SetFloat("_Metallic", 0.0f);
+                    foliageMat.SetFloat("_Glossiness", 0.3f);
+                    canopyRenderer.sharedMaterial = foliageMat;
+                    EditorUtility.SetDirty(canopyRenderer);
+                }
+            }
+            
+            // === BRANCHES (for larger trees) ===
+            if (data.trunkHeight > 7f)
+            {
+                int branchCount = UnityEngine.Random.Range(3, 6);
+                for (int i = 0; i < branchCount; i++)
+                {
+                    GameObject branch = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                    branch.name = $"Branch_{i}";
+                    branch.transform.SetParent(treeGroup.transform);
+                    
+                    float angle = (360f / branchCount) * i + UnityEngine.Random.Range(-15f, 15f);
+                    float branchHeight = data.trunkHeight * UnityEngine.Random.Range(0.6f, 0.8f);
+                    float branchLength = data.trunkDiameter * 2.5f;
+                    
+                    Vector3 branchDir = new Vector3(
+                        Mathf.Cos(angle * Mathf.Deg2Rad),
+                        0,
+                        Mathf.Sin(angle * Mathf.Deg2Rad)
+                    );
+                    
+                    branch.transform.localPosition = new Vector3(
+                        x + branchDir.x * branchLength * 0.5f,
+                        branchHeight,
+                        z + branchDir.z * branchLength * 0.5f
+                    );
+                    
+                    branch.transform.localRotation = Quaternion.Euler(0, angle, 75);
+                    branch.transform.localScale = new Vector3(
+                        data.trunkDiameter * 0.3f,
+                        branchLength / 2f,
+                        data.trunkDiameter * 0.3f
+                    );
+                    
+                    Undo.RegisterCreatedObjectUndo(branch, "Generate Forest");
+                    objectCount++;
+                    
+                    var branchRenderer = branch.GetComponent<Renderer>();
+                    if (branchRenderer != null)
+                    {
+                        Material branchMat = CreateURPMaterial();
+                        branchMat.color = data.barkColor * 0.9f;
+                        branchMat.SetFloat("_Metallic", 0.0f);
+                        branchMat.SetFloat("_Glossiness", 1.0f - data.roughness);
+                        branchRenderer.sharedMaterial = branchMat;
+                        EditorUtility.SetDirty(branchRenderer);
+                    }
+                }
+            }
+            
+            return objectCount;
+        }
+
+        /// <summary>
+        /// Create a bush/shrub for understory
+        /// </summary>
+        private static int CreateBush(GameObject parent, float x, float z, int index)
+        {
+            GameObject bush = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            bush.name = $"Bush_{index}";
+            bush.transform.SetParent(parent.transform);
+            
+            float size = UnityEngine.Random.Range(1.2f, 2.5f);
+            bush.transform.localPosition = new Vector3(x, size * 0.4f, z);
+            bush.transform.localScale = new Vector3(size, size * 0.7f, size);
+            
+            Undo.RegisterCreatedObjectUndo(bush, "Generate Forest");
+            
+            var renderer = bush.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                Material mat = CreateURPMaterial();
+                mat.color = new Color(
+                    UnityEngine.Random.Range(0.15f, 0.25f),
+                    UnityEngine.Random.Range(0.40f, 0.55f),
+                    UnityEngine.Random.Range(0.10f, 0.20f)
+                );
+                mat.SetFloat("_Metallic", 0.0f);
+                mat.SetFloat("_Glossiness", 0.2f);
+                renderer.sharedMaterial = mat;
+                EditorUtility.SetDirty(renderer);
+            }
+            
+            return 1;
+        }
+
+        /// <summary>
+        /// Create a cluster of ferns (low undergrowth)
+        /// </summary>
+        private static int CreateFernCluster(GameObject parent, float x, float z, int index)
+        {
+            int count = 0;
+            int fernCount = UnityEngine.Random.Range(2, 5);
+            
+            for (int i = 0; i < fernCount; i++)
+            {
+                GameObject fern = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                fern.name = $"Fern_{index}_{i}";
+                fern.transform.SetParent(parent.transform);
+                
+                float offsetX = UnityEngine.Random.Range(-0.8f, 0.8f);
+                float offsetZ = UnityEngine.Random.Range(-0.8f, 0.8f);
+                float height = UnityEngine.Random.Range(0.6f, 1.2f);
+                
+                fern.transform.localPosition = new Vector3(x + offsetX, height * 0.5f, z + offsetZ);
+                fern.transform.localScale = new Vector3(0.3f, height, 0.8f);
+                fern.transform.localRotation = Quaternion.Euler(0, UnityEngine.Random.Range(0f, 360f), 0);
+                
+                Undo.RegisterCreatedObjectUndo(fern, "Generate Forest");
+                count++;
+                
+                var renderer = fern.GetComponent<Renderer>();
+                if (renderer != null)
+                {
+                    Material mat = CreateURPMaterial();
+                    mat.color = new Color(0.18f, 0.50f, 0.15f);
+                    mat.SetFloat("_Metallic", 0.0f);
+                    mat.SetFloat("_Glossiness", 0.35f);
+                    renderer.sharedMaterial = mat;
+                    EditorUtility.SetDirty(renderer);
+                }
+            }
+            
+            return count;
+        }
+
+        /// <summary>
+        /// Create a fallen log (decomposing wood)
+        /// </summary>
+        private static int CreateFallenLog(GameObject parent, float x, float z, int index)
+        {
+            GameObject log = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            log.name = $"FallenLog_{index}";
+            log.transform.SetParent(parent.transform);
+            
+            float length = UnityEngine.Random.Range(4f, 8f);
+            float diameter = UnityEngine.Random.Range(0.6f, 1.2f);
+            float angle = UnityEngine.Random.Range(0f, 360f);
+            
+            log.transform.localPosition = new Vector3(x, diameter * 0.4f, z);
+            log.transform.localRotation = Quaternion.Euler(90, angle, 0);
+            log.transform.localScale = new Vector3(diameter, length / 2f, diameter);
+            
+            Undo.RegisterCreatedObjectUndo(log, "Generate Forest");
+            
+            var renderer = log.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                Material mat = CreateURPMaterial();
+                // Weathered, decaying wood color
+                mat.color = new Color(0.25f, 0.18f, 0.12f);
+                mat.SetFloat("_Metallic", 0.0f);
+                mat.SetFloat("_Glossiness", 0.15f);
+                renderer.sharedMaterial = mat;
+                EditorUtility.SetDirty(renderer);
+            }
+            
+            return 1;
+        }
+
+        /// <summary>
+        /// Create a cluster of mushrooms
+        /// </summary>
+        private static int CreateMushroomCluster(GameObject parent, float x, float z, int index)
+        {
+            int count = 0;
+            int mushroomCount = UnityEngine.Random.Range(3, 7);
+            
+            for (int i = 0; i < mushroomCount; i++)
+            {
+                GameObject mushroomGroup = new GameObject($"Mushroom_{index}_{i}");
+                mushroomGroup.transform.SetParent(parent.transform);
+                Undo.RegisterCreatedObjectUndo(mushroomGroup, "Generate Forest");
+                
+                float offsetX = UnityEngine.Random.Range(-0.5f, 0.5f);
+                float offsetZ = UnityEngine.Random.Range(-0.5f, 0.5f);
+                float size = UnityEngine.Random.Range(0.15f, 0.35f);
+                
+                // Mushroom stem
+                GameObject stem = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                stem.name = "Stem";
+                stem.transform.SetParent(mushroomGroup.transform);
+                stem.transform.localPosition = new Vector3(x + offsetX, size * 0.5f, z + offsetZ);
+                stem.transform.localScale = new Vector3(size * 0.3f, size * 0.5f, size * 0.3f);
+                Undo.RegisterCreatedObjectUndo(stem, "Generate Forest");
+                count++;
+                
+                var stemRenderer = stem.GetComponent<Renderer>();
+                if (stemRenderer != null)
+                {
+                    Material stemMat = CreateURPMaterial();
+                    stemMat.color = new Color(0.85f, 0.82f, 0.75f);
+                    stemMat.SetFloat("_Metallic", 0.0f);
+                    stemMat.SetFloat("_Glossiness", 0.4f);
+                    stemRenderer.sharedMaterial = stemMat;
+                    EditorUtility.SetDirty(stemRenderer);
+                }
+                
+                // Mushroom cap
+                GameObject cap = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                cap.name = "Cap";
+                cap.transform.SetParent(mushroomGroup.transform);
+                cap.transform.localPosition = new Vector3(x + offsetX, size * 1.2f, z + offsetZ);
+                cap.transform.localScale = new Vector3(size * 1.5f, size * 0.6f, size * 1.5f);
+                Undo.RegisterCreatedObjectUndo(cap, "Generate Forest");
+                count++;
+                
+                var capRenderer = cap.GetComponent<Renderer>();
+                if (capRenderer != null)
+                {
+                    Material capMat = CreateURPMaterial();
+                    // Random mushroom colors (brown, red, yellow variations)
+                    float colorChoice = UnityEngine.Random.value;
+                    if (colorChoice < 0.6f)
+                        capMat.color = new Color(0.5f, 0.3f, 0.2f); // Brown
+                    else if (colorChoice < 0.85f)
+                        capMat.color = new Color(0.7f, 0.2f, 0.15f); // Red
+                    else
+                        capMat.color = new Color(0.8f, 0.7f, 0.3f); // Yellow
+                        
+                    capMat.SetFloat("_Metallic", 0.0f);
+                    capMat.SetFloat("_Glossiness", 0.5f);
+                    capRenderer.sharedMaterial = capMat;
+                    EditorUtility.SetDirty(capRenderer);
+                }
+            }
+            
+            return count;
+        }
+
+        /// <summary>
+        /// Create a moss-covered rock
+        /// </summary>
+        private static int CreateMossyRock(GameObject parent, float x, float z, int index)
+        {
+            GameObject rock = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            rock.name = $"MossyRock_{index}";
+            rock.transform.SetParent(parent.transform);
+            
+            float size = UnityEngine.Random.Range(0.8f, 2.0f);
+            rock.transform.localPosition = new Vector3(x, size * 0.35f, z);
+            rock.transform.localScale = new Vector3(size, size * 0.6f, size * 0.9f);
+            rock.transform.localRotation = Quaternion.Euler(
+                UnityEngine.Random.Range(-15f, 15f),
+                UnityEngine.Random.Range(0f, 360f),
+                UnityEngine.Random.Range(-15f, 15f)
+            );
+            
+            Undo.RegisterCreatedObjectUndo(rock, "Generate Forest");
+            
+            var renderer = rock.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                Material mat = CreateURPMaterial();
+                // Gray rock with greenish moss tint
+                mat.color = new Color(0.25f, 0.30f, 0.22f);
+                mat.SetFloat("_Metallic", 0.0f);
+                mat.SetFloat("_Glossiness", 0.25f);
+                renderer.sharedMaterial = mat;
+                EditorUtility.SetDirty(renderer);
+            }
+            
+            return 1;
+        }
+
+        /// <summary>
+        /// Create ground cover (represents leaf litter, small plants)
+        /// </summary>
+        private static int CreateGroundCover(GameObject parent, float x, float z, int index)
+        {
+            GameObject cover = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cover.name = $"GroundCover_{index}";
+            cover.transform.SetParent(parent.transform);
+            
+            float size = UnityEngine.Random.Range(1.0f, 2.0f);
+            cover.transform.localPosition = new Vector3(x, 0.05f, z);
+            cover.transform.localScale = new Vector3(size, 0.1f, size);
+            cover.transform.localRotation = Quaternion.Euler(0, UnityEngine.Random.Range(0f, 360f), 0);
+            
+            Undo.RegisterCreatedObjectUndo(cover, "Generate Forest");
+            
+            var renderer = cover.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                Material mat = CreateURPMaterial();
+                // Brown leaf litter color
+                mat.color = new Color(0.35f, 0.25f, 0.15f);
+                mat.SetFloat("_Metallic", 0.0f);
+                mat.SetFloat("_Glossiness", 0.1f);
+                renderer.sharedMaterial = mat;
+                EditorUtility.SetDirty(renderer);
+            }
+            
+            return 1;
         }
 
         /// <summary>
@@ -1034,10 +1721,19 @@ namespace UnityMCP
                     break;
 
                 case BiomeType.Forest:
-                    dirLight.color = new Color(0.9f, 1f, 0.9f);
-                    dirLight.intensity = 1f;
-                    dirLight.transform.rotation = Quaternion.Euler(50, 50, 0);
-                    RenderSettings.ambientLight = new Color(0.3f, 0.4f, 0.3f);
+                    // Dappled sunlight filtering through canopy
+                    dirLight.color = new Color(1f, 0.95f, 0.85f); // Warm sunlight
+                    dirLight.intensity = 0.9f; // Slightly dimmed by canopy
+                    dirLight.transform.rotation = Quaternion.Euler(55, 45, 0); // Late morning angle
+                    
+                    // Rich, natural forest ambient light (greenish from foliage)
+                    RenderSettings.ambientLight = new Color(0.25f, 0.35f, 0.25f);
+                    
+                    // Subtle fog for atmospheric depth
+                    RenderSettings.fog = true;
+                    RenderSettings.fogColor = new Color(0.7f, 0.75f, 0.7f);
+                    RenderSettings.fogMode = FogMode.Exponential;
+                    RenderSettings.fogDensity = 0.008f; // Very subtle
                     break;
 
                 case BiomeType.Arctic:
