@@ -452,14 +452,10 @@ namespace UnityMCP
 
             Undo.RecordObject(renderer, "Set Material");
 
-            // Create or modify material
-            Material mat = renderer.sharedMaterial;
-            if (mat == null || mat.name == "Default-Material")
-            {
-                mat = new Material(Shader.Find("Standard"));
-                mat.name = $"{name}_Material";
-                renderer.sharedMaterial = mat;
-            }
+            // Create NEW material for each object to ensure unique colors
+            Material mat = new Material(CreateURPMaterial());
+            mat.name = $"{name}_Material_{UnityEngine.Random.Range(1000, 9999)}";
+            renderer.sharedMaterial = mat;
 
             // Apply color
             if (json.ContainsKey("color"))
@@ -469,7 +465,10 @@ namespace UnityMCP
                 float g = GetFloat(colorDict, "g", 1.0f);
                 float b = GetFloat(colorDict, "b", 1.0f);
                 float a = GetFloat(colorDict, "a", 1.0f);
-                mat.color = new Color(r, g, b, a);
+                
+                Color color = new Color(r, g, b, a);
+                mat.SetColor("_BaseColor", color);
+                mat.color = color;
             }
 
             // Apply metallic (0-1)
@@ -479,11 +478,11 @@ namespace UnityMCP
                 mat.SetFloat("_Metallic", Mathf.Clamp01(metallic));
             }
 
-            // Apply smoothness (0-1)
+            // Apply smoothness (0-1) - URP uses _Smoothness
             if (json.ContainsKey("smoothness"))
             {
                 float smoothness = GetFloat(json, "smoothness", 0.5f);
-                mat.SetFloat("_Glossiness", Mathf.Clamp01(smoothness));
+                mat.SetFloat("_Smoothness", Mathf.Clamp01(smoothness));
             }
 
             // Apply emission
@@ -496,7 +495,9 @@ namespace UnityMCP
                 float intensity = GetFloat(emissionDict, "intensity", 1.0f);
                 
                 mat.EnableKeyword("_EMISSION");
-                mat.SetColor("_EmissionColor", new Color(r, g, b, 1.0f) * intensity);
+                Color emissionColor = new Color(r, g, b, 1.0f) * intensity;
+                mat.SetColor("_EmissionColor", emissionColor);
+                mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
             }
 
             // Apply texture tiling and offset
@@ -750,8 +751,9 @@ namespace UnityMCP
             if (meshFilters.Length == 0)
                 throw new Exception($"No mesh filters found in children of: {parentName}");
 
-            // Group by material for optimal batching
-            Dictionary<Material, List<CombineInstance>> materialGroups = new Dictionary<Material, List<CombineInstance>>();
+            // Collect all meshes and materials for multi-material combining
+            List<CombineInstance> combineInstances = new List<CombineInstance>();
+            List<Material> materials = new List<Material>();
 
             foreach (MeshFilter meshFilter in meshFilters)
             {
@@ -763,51 +765,68 @@ namespace UnityMCP
                 Material material = renderer.sharedMaterial;
                 if (material == null) material = new Material(Shader.Find("Standard"));
 
-                if (!materialGroups.ContainsKey(material))
-                    materialGroups[material] = new List<CombineInstance>();
-
+                // Add combine instance
                 CombineInstance combine = new CombineInstance();
                 combine.mesh = meshFilter.sharedMesh;
                 combine.transform = meshFilter.transform.localToWorldMatrix;
-                materialGroups[material].Add(combine);
+                combineInstances.Add(combine);
+
+                // Track material
+                materials.Add(material);
             }
 
-            // Create combined mesh for each material
-            int combinedCount = 0;
-            foreach (var kvp in materialGroups)
+            // Create single combined mesh with multiple materials (submeshes)
+            GameObject combined = new GameObject($"{parent.name}_Combined");
+            combined.transform.SetParent(parent.transform);
+            combined.transform.localPosition = Vector3.zero;
+            combined.transform.localRotation = Quaternion.identity;
+            combined.transform.localScale = Vector3.one;
+
+            MeshFilter combinedFilter = combined.AddComponent<MeshFilter>();
+            MeshRenderer combinedRenderer = combined.AddComponent<MeshRenderer>();
+
+            Mesh combinedMesh = new Mesh();
+            combinedMesh.name = $"{parent.name}_CombinedMesh";
+            
+            // Set submesh count to match number of original meshes
+            combinedMesh.subMeshCount = combineInstances.Count;
+            
+            // Combine meshes WITHOUT merging submeshes (preserves individual materials)
+            combineInstances.Clear(); // Reset and rebuild properly
+            
+            int submeshIndex = 0;
+            foreach (MeshFilter meshFilter in meshFilters)
             {
-                GameObject combined = new GameObject($"{parent.name}_Combined_{combinedCount}");
-                combined.transform.SetParent(parent.transform);
-                combined.transform.localPosition = Vector3.zero;
-                combined.transform.localRotation = Quaternion.identity;
-                combined.transform.localScale = Vector3.one;
-
-                MeshFilter combinedFilter = combined.AddComponent<MeshFilter>();
-                MeshRenderer combinedRenderer = combined.AddComponent<MeshRenderer>();
-
-                Mesh combinedMesh = new Mesh();
-                combinedMesh.name = $"{parent.name}_CombinedMesh_{combinedCount}";
-                combinedMesh.CombineMeshes(kvp.Value.ToArray(), true, true);
+                if (meshFilter.gameObject == parent) continue;
                 
-                // Optimize the mesh
-                combinedMesh.RecalculateNormals();
-                combinedMesh.RecalculateBounds();
-                combinedMesh.Optimize();
+                MeshRenderer renderer = meshFilter.GetComponent<MeshRenderer>();
+                if (renderer == null) continue;
 
-                combinedFilter.sharedMesh = combinedMesh;
-                combinedRenderer.sharedMaterial = kvp.Key;
-
-                // Generate mesh collider if requested
-                if (generateCollider)
-                {
-                    MeshCollider collider = combined.AddComponent<MeshCollider>();
-                    collider.sharedMesh = combinedMesh;
-                    collider.convex = false; // More accurate for static geometry
-                }
-
-                Undo.RegisterCreatedObjectUndo(combined, "Combine Meshes");
-                combinedCount++;
+                CombineInstance ci = new CombineInstance();
+                ci.mesh = meshFilter.sharedMesh;
+                ci.transform = meshFilter.transform.localToWorldMatrix;
+                combineInstances.Add(ci);
+                submeshIndex++;
             }
+            
+            // Combine with mergeSubMeshes = FALSE to preserve individual materials
+            combinedMesh.CombineMeshes(combineInstances.ToArray(), false, true);
+            combinedMesh.RecalculateNormals();
+            combinedMesh.RecalculateBounds();
+            
+            combinedFilter.sharedMesh = combinedMesh;
+            combinedRenderer.sharedMaterials = materials.ToArray();
+
+            // Generate mesh collider if requested
+            if (generateCollider)
+            {
+                MeshCollider collider = combined.AddComponent<MeshCollider>();
+                collider.sharedMesh = combinedMesh;
+                collider.convex = false;
+            }
+
+            Undo.RegisterCreatedObjectUndo(combined, "Combine Meshes");
+            int combinedCount = 1;
 
             // Destroy original child objects if requested
             if (destroyOriginals)
@@ -880,11 +899,12 @@ namespace UnityMCP
                 {
                     if (count > 0) results.Append(",");
 
-                    var bounds = go.GetComponent<Renderer>()?.bounds;
+                    // Get bounds only if GameObject has a Renderer component
                     string boundsStr = "null";
-                    if (bounds.HasValue)
+                    var renderer = go.GetComponent<Renderer>();
+                    if (renderer != null)
                     {
-                        var b = bounds.Value;
+                        var b = renderer.bounds;
                         boundsStr = $"{{\"center\": {{\"x\": {b.center.x}, \"y\": {b.center.y}, \"z\": {b.center.z}}}, " +
                                    $"\"size\": {{\"x\": {b.size.x}, \"y\": {b.size.y}, \"z\": {b.size.z}}}}}";
                     }
@@ -1313,7 +1333,7 @@ namespace UnityMCP
             if (source == null)
                 throw new Exception($"Source GameObject not found: {sourceName}");
 
-            GameObject duplicate = Object.Instantiate(source);
+            GameObject duplicate = UnityEngine.Object.Instantiate(source);
             duplicate.name = newName;
 
             if (json.ContainsKey("offset"))
@@ -1368,7 +1388,7 @@ namespace UnityMCP
             var createdObjects = new List<string>();
             for (int i = 0; i < count; i++)
             {
-                GameObject duplicate = Object.Instantiate(source);
+                GameObject duplicate = UnityEngine.Object.Instantiate(source);
                 duplicate.name = $"{namePrefix}_{i}";
                 duplicate.transform.position = source.transform.position + spacing * i;
                 
@@ -1416,7 +1436,7 @@ namespace UnityMCP
 
             for (int i = 0; i < count; i++)
             {
-                GameObject duplicate = Object.Instantiate(source);
+                GameObject duplicate = UnityEngine.Object.Instantiate(source);
                 duplicate.name = $"{namePrefix}_{i}";
                 
                 float angle = i * angleStep * Mathf.Deg2Rad;
@@ -1476,7 +1496,7 @@ namespace UnityMCP
                         // Skip the first one if it's at 0,0,0 (original position)
                         if (x == 0 && y == 0 && z == 0) continue;
 
-                        GameObject duplicate = Object.Instantiate(source);
+                        GameObject duplicate = UnityEngine.Object.Instantiate(source);
                         duplicate.name = $"{namePrefix}_{x}_{y}_{z}";
                         duplicate.transform.position = source.transform.position + new Vector3(
                             x * spacingX,
@@ -1533,7 +1553,7 @@ namespace UnityMCP
                 case "Directional": lightType = LightType.Directional; break;
                 case "Point": lightType = LightType.Point; break;
                 case "Spot": lightType = LightType.Spot; break;
-                case "Area": lightType = LightType.Area; break;
+                case "Area": lightType = LightType.Rectangle; break;
                 default: throw new Exception($"Unknown light type: {lightTypeStr}");
             }
 
@@ -1669,8 +1689,8 @@ namespace UnityMCP
             Undo.RecordObject(rb, "Configure Rigidbody");
 
             rb.mass = GetFloat(json, "mass", 1f);
-            rb.drag = GetFloat(json, "drag", 0f);
-            rb.angularDrag = GetFloat(json, "angularDrag", 0.05f);
+            rb.linearDamping = GetFloat(json, "drag", 0f);
+            rb.angularDamping = GetFloat(json, "angularDrag", 0.05f);
             rb.useGravity = GetBool(json, "useGravity", true);
             rb.isKinematic = GetBool(json, "isKinematic", false);
 
@@ -1849,6 +1869,32 @@ namespace UnityMCP
             }
 
             return "{\"hit\": false}";
+        }
+
+        /// <summary>
+        /// Creates a URP-compatible material shader
+        /// </summary>
+        private static Shader CreateURPMaterial()
+        {
+            // Try URP Lit shader first
+            Shader urpShader = Shader.Find("Universal Render Pipeline/Lit");
+            if (urpShader != null)
+            {
+                Debug.Log("[Unity MCP] Using URP Lit shader");
+                return urpShader;
+            }
+
+            // Fallback to Standard for Built-in pipeline
+            Shader standardShader = Shader.Find("Standard");
+            if (standardShader != null)
+            {
+                Debug.Log("[Unity MCP] Using Standard shader (Built-in pipeline)");
+                return standardShader;
+            }
+
+            // Last resort - find any shader
+            Debug.LogWarning("[Unity MCP] Could not find URP or Standard shader, using default");
+            return Shader.Find("Diffuse");
         }
 
         private static string EscapeJson(string str)
