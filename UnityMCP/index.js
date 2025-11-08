@@ -399,6 +399,57 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
         },
       },
+      {
+        name: 'unity_generate_world',
+        description: 'Generate a complete realtime generated world with specified biome, terrain, and environmental features. Creates an entire playable world in seconds.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            biome: {
+              type: 'string',
+              description: 'World biome type: Forest, Desert, City, Medieval, SciFi, Fantasy, Underwater, Arctic, Jungle, or Wasteland',
+              enum: ['Forest', 'Desert', 'City', 'Medieval', 'SciFi', 'Fantasy', 'Underwater', 'Arctic', 'Jungle', 'Wasteland']
+            },
+            worldSize: {
+              type: 'number',
+              description: 'Size of the world in Unity units (default: 100)',
+              default: 100
+            },
+            density: {
+              type: 'number',
+              description: 'Object density from 0-100, higher = more objects (default: 50)',
+              default: 50,
+              minimum: 0,
+              maximum: 100
+            },
+            includeTerrain: {
+              type: 'boolean',
+              description: 'Generate terrain/ground (default: true)',
+              default: true
+            },
+            includeLighting: {
+              type: 'boolean',
+              description: 'Setup biome-appropriate lighting (default: true)',
+              default: true
+            },
+            includeProps: {
+              type: 'boolean',
+              description: 'Add environmental props/details (default: true)',
+              default: true
+            },
+            optimizeMeshes: {
+              type: 'boolean',
+              description: 'Automatically optimize meshes for performance (default: true)',
+              default: true
+            },
+            seed: {
+              type: 'string',
+              description: 'Random seed for reproducible worlds (optional)',
+            }
+          },
+          required: ['biome'],
+        },
+      },
     ],
   };
 });
@@ -540,6 +591,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           query: args.query,
           radius: args.radius,
           position: args.position
+        });
+        break;
+
+      case 'unity_generate_world':
+        result = await callUnity('/generateWorld', {
+          biome: args.biome,
+          worldSize: args.worldSize,
+          density: args.density,
+          includeTerrain: args.includeTerrain,
+          includeLighting: args.includeLighting,
+          includeProps: args.includeProps,
+          optimizeMeshes: args.optimizeMeshes,
+          seed: args.seed
         });
         break;
 

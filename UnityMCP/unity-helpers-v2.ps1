@@ -433,6 +433,145 @@ function Show-Progress {
 # EXPORT FUNCTIONS
 # ============================================================
 
+# ============================================================
+# WORLD GENERATION
+# ============================================================
+
+function New-World {
+    <#
+    .SYNOPSIS
+    Generate a complete realtime generated world
+    
+    .DESCRIPTION
+    Creates an entire world with terrain, environment, props, and lighting
+    based on the specified biome type. Supports 10 different biomes.
+    
+    .PARAMETER biome
+    World biome type: Forest, Desert, City, Medieval, SciFi, Fantasy, 
+    Underwater, Arctic, Jungle, or Wasteland
+    
+    .PARAMETER worldSize
+    Size of the world in Unity units (default: 100)
+    
+    .PARAMETER density
+    Object density from 0-100, higher = more objects (default: 50)
+    
+    .PARAMETER includeTerrain
+    Generate terrain/ground (default: true)
+    
+    .PARAMETER includeLighting
+    Setup biome-appropriate lighting (default: true)
+    
+    .PARAMETER includeProps
+    Add environmental props/details (default: true)
+    
+    .PARAMETER optimizeMeshes
+    Automatically optimize meshes for performance (default: true)
+    
+    .PARAMETER seed
+    Random seed for reproducible worlds (optional)
+    
+    .EXAMPLE
+    New-World -biome "Forest"
+    
+    .EXAMPLE
+    New-World -biome "City" -worldSize 200 -density 70
+    
+    .EXAMPLE
+    New-World -biome "Medieval" -seed "MyKingdom123"
+    #>
+    param(
+        [Parameter(Mandatory=$true)]
+        [ValidateSet('Forest', 'Desert', 'City', 'Medieval', 'SciFi', 'Fantasy', 'Underwater', 'Arctic', 'Jungle', 'Wasteland')]
+        [string]$biome,
+        
+        [int]$worldSize = 100,
+        
+        [ValidateRange(0, 100)]
+        [int]$density = 50,
+        
+        [bool]$includeTerrain = $true,
+        [bool]$includeLighting = $true,
+        [bool]$includeProps = $true,
+        [bool]$optimizeMeshes = $true,
+        
+        [string]$seed = ""
+    )
+    
+    Write-Host ""
+    Write-Host "========================================" -ForegroundColor Cyan
+    Write-Host "  WORLD GENERATION: $biome" -ForegroundColor Cyan
+    Write-Host "========================================" -ForegroundColor Cyan
+    Write-Host ""
+    
+    $body = @{
+        biome = $biome
+        worldSize = $worldSize
+        density = $density
+        includeTerrain = $includeTerrain
+        includeLighting = $includeLighting
+        includeProps = $includeProps
+        optimizeMeshes = $optimizeMeshes
+    }
+    
+    if ($seed) {
+        $body.seed = $seed
+    }
+    
+    $json = $body | ConvertTo-Json
+    
+    try {
+        Write-Host "[INFO] Generating $biome world..." -ForegroundColor Yellow
+        Write-Host "       Size: $worldSize units" -ForegroundColor Gray
+        Write-Host "       Density: $density%" -ForegroundColor Gray
+        Write-Host ""
+        
+        $startTime = Get-Date
+        
+        $result = Invoke-RestMethod `
+            -Uri "$UNITY_BASE/generateWorld" `
+            -Method POST `
+            -ContentType "application/json" `
+            -Body $json `
+            -UseBasicParsing
+        
+        $duration = (Get-Date) - $startTime
+        
+        if ($result.success) {
+            Write-Host ""
+            Write-Host "[SUCCESS] World generated!" -ForegroundColor Green
+            Write-Host "          World Name: $($result.worldName)" -ForegroundColor White
+            Write-Host "          Total Objects: $($result.totalObjects)" -ForegroundColor White
+            Write-Host "          Generation Time: $([math]::Round($duration.TotalSeconds, 2))s" -ForegroundColor White
+            Write-Host ""
+            
+            if ($result.terrain) {
+                Write-Host "  [TERRAIN] $($result.terrain.objectCount) objects" -ForegroundColor Cyan
+            }
+            if ($result.environment) {
+                Write-Host "  [ENVIRONMENT] $($result.environment.objectCount) objects" -ForegroundColor Cyan
+            }
+            if ($result.props) {
+                Write-Host "  [PROPS] $($result.props.objectCount) objects" -ForegroundColor Cyan
+            }
+            if ($result.lighting) {
+                Write-Host "  [LIGHTING] Configured" -ForegroundColor Cyan
+            }
+            
+            Write-Host ""
+            return $result
+        }
+        else {
+            Write-Host "[ERROR] World generation failed: $($result.error)" -ForegroundColor Red
+            return $null
+        }
+    }
+    catch {
+        Write-Host "[ERROR] Failed to generate world: $_" -ForegroundColor Red
+        return $null
+    }
+}
+
 Export-ModuleMember -Function @(
     'Create-UnityObject',
     'Set-Transform',
@@ -448,8 +587,9 @@ Export-ModuleMember -Function @(
     'Build-Group',
     'Build-DiagonalObject',
     'Test-UnityConnection',
-    'Show-Progress'
+    'Show-Progress',
+    'New-World'
 )
 
-Write-Host "[LOADED] Unity MCP Enhanced Helper Library v2.0" -ForegroundColor Cyan
-Write-Host "         Materials + Hierarchy + Scene Intelligence" -ForegroundColor Cyan
+Write-Host "[LOADED] Unity MCP Enhanced Helper Library v2.0 + World Generation" -ForegroundColor Cyan
+Write-Host "         Materials + Hierarchy + Scene Intelligence + Realtime World Gen" -ForegroundColor Cyan
