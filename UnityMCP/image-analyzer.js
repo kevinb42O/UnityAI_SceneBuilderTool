@@ -7,6 +7,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import { validateScene, autoFixPositioning, validateGroundPlacement, recommendSpacing } from './spatial-validator.js';
 
 /**
  * Analyze image and generate structured scene description
@@ -63,6 +64,16 @@ Available Unity primitives: Cube, Sphere, Cylinder, Capsule, Plane, Quad
 Available materials: Wood_Oak, Metal_Steel, Metal_Gold, Metal_Bronze, Glass_Clear, Brick_Red, Concrete, Stone_Gray, Grass_Green, Water_Blue, Rubber_Black, Plastic_White, Emissive_Blue, Emissive_Red
 Available patterns: Linear array, Circular array, Grid array
 
+CRITICAL SPATIAL RULES:
+1. Unity uses METERS as units (1 unit = 1 meter). A human is ~1.8 units tall.
+2. Y-axis is UP. Ground level is Y=0. Objects sit ON ground with Y = half their height.
+3. Avoid overlaps: Objects must not occupy the same space. Check positions carefully.
+4. Use proper spacing: Minimum 0.5 units between objects to prevent z-fighting.
+5. Scale appropriately: A door is ~2 units tall, a table is ~1 unit tall, a car is ~4 units long.
+6. For "on top of": Calculate Y position as: bottom_object_Y + bottom_object_height/2 + top_object_height/2
+7. For "next to": Same Y, different X or Z with spacing = (obj1_width + obj2_width)/2 + gap
+8. For "inside": Parent-child relationship, child position relative to parent center
+
 `;
 
   const typePrompts = {
@@ -70,20 +81,24 @@ Available patterns: Linear array, Circular array, Grid array
 FOCUS: Single object or statue
 - Identify the main object
 - Approximate its shape using Unity primitives (Cube, Sphere, Cylinder, etc.)
-- Determine scale (small, medium, large)
+- Determine REALISTIC scale in meters (small object: 0.1-0.5m, furniture: 0.5-2m, building: 2-20m)
 - Identify material properties (color, metallic, smoothness)
 - Break complex shapes into multiple primitive combinations
+- CRITICAL: Calculate Y positions so objects don't overlap or float
+  * Base/pedestal: Y = height/2 (sits on ground)
+  * Parts on top: Y = previous_Y + previous_height/2 + current_height/2
+  * Example: Pedestal (height 1m, Y=0.5), Body on pedestal (height 2m, Y=0.5+0.5+1=2)
 
 Output JSON format:
 {
   "type": "single_object",
   "name": "ObjectName",
-  "description": "Brief description",
+  "description": "Brief description with estimated real-world size",
   "components": [
     {
       "primitive": "Cube/Sphere/Cylinder",
-      "position": {"x": 0, "y": 0, "z": 0},
-      "scale": {"x": 1, "y": 1, "z": 1},
+      "position": {"x": 0, "y": 0.5, "z": 0},  // Y MUST be calculated: height/2 for ground objects
+      "scale": {"x": 1, "y": 1, "z": 1},  // Real-world meters, not arbitrary
       "rotation": {"x": 0, "y": 0, "z": 0},
       "material": {
         "preset": "Material_Name or null",
@@ -92,6 +107,15 @@ Output JSON format:
         "smoothness": 0.0-1.0
       }
     }
+  ]
+}
+
+EXAMPLE - Statue on pedestal (3m tall total):
+{
+  "components": [
+    {"primitive": "Cylinder", "position": {"x": 0, "y": 0.5, "z": 0}, "scale": {"x": 1, "y": 1, "z": 1}},  // Pedestal: 1m tall, Y=0.5
+    {"primitive": "Cube", "position": {"x": 0, "y": 2, "z": 0}, "scale": {"x": 0.8, "y": 2, "z": 0.6}},  // Body: 2m tall, Y=0.5+0.5+1=2
+    {"primitive": "Sphere", "position": {"x": 0, "y": 3.3, "z": 0}, "scale": {"x": 0.5, "y": 0.6, "z": 0.5}}  // Head: 0.6m tall, Y=2+1+0.3=3.3
   ]
 }`,
 
@@ -102,11 +126,16 @@ FOCUS: Complete scene with multiple objects
 - Determine ground/terrain type
 - Identify lighting conditions (bright/dim, direction)
 - Group related objects hierarchically
+- CRITICAL: Calculate proper spacing and Y positions for ALL objects
+  * Measure distances between objects in image, convert to realistic meters
+  * Ensure no overlaps: min 0.5m gap between objects
+  * Objects on ground: Y = object_height/2
+  * Objects on tables/platforms: Y = platform_top + object_height/2
 
 Output JSON format:
 {
   "type": "complete_scene",
-  "description": "Scene overview",
+  "description": "Scene overview with spatial analysis",
   "environment": {
     "terrain": "flat/hilly/urban",
     "ground_material": "Grass_Green/Concrete/etc",
@@ -121,8 +150,8 @@ Output JSON format:
     {
       "name": "ObjectName",
       "primitive": "Cube/Sphere/etc",
-      "position": {"x": 0, "y": 0, "z": 0},
-      "scale": {"x": 1, "y": 1, "z": 1},
+      "position": {"x": 0, "y": 0.5, "z": 0},  // CALCULATE Y = height/2 for ground objects
+      "scale": {"x": 1, "y": 1, "z": 1},  // Realistic meters based on object type
       "material": {...}
     }
   ],
@@ -131,9 +160,19 @@ Output JSON format:
       "type": "linear/circular/grid",
       "template": "ObjectName",
       "count": 10,
-      "spacing": 5,
+      "spacing": 5,  // MUST be > object_width to prevent overlap
       "center": {"x": 0, "y": 0, "z": 0}
     }
+  ]
+}
+
+EXAMPLE - Park bench with trees:
+{
+  "objects": [
+    {"name": "Ground", "primitive": "Plane", "position": {"x": 0, "y": 0, "z": 0}, "scale": {"x": 50, "y": 1, "z": 50}},
+    {"name": "Bench", "primitive": "Cube", "position": {"x": 0, "y": 0.25, "z": 0}, "scale": {"x": 2, "y": 0.5, "z": 0.6}},  // Bench: 0.5m tall, Y=0.25
+    {"name": "Tree1", "primitive": "Cylinder", "position": {"x": -5, "y": 3, "z": 2}, "scale": {"x": 0.5, "y": 6, "z": 0.5}},  // Tree: 6m tall, Y=3, 5m from bench
+    {"name": "Tree2", "primitive": "Cylinder", "position": {"x": 5, "y": 3, "z": -2}, "scale": {"x": 0.5, "y": 6, "z": 0.5}}  // Tree: 6m tall, Y=3, 5m on opposite side
   ]
 }`,
 
@@ -141,34 +180,64 @@ Output JSON format:
 FOCUS: Building or architectural structure
 - Identify structural elements (walls, floors, roof, windows, doors)
 - Detect architectural style
-- Measure proportions and relationships
+- Measure proportions and relationships using real-world building standards
 - Identify material types (brick, concrete, wood, glass)
 - Detect repetitive elements (windows, columns)
+- CRITICAL: Calculate positions to prevent overlaps
+  * Floor height: typically 3m per floor
+  * Wall thickness: 0.2-0.5m
+  * Wall Y position: floor_height + wall_height/2
+  * Windows: must be INSIDE wall space, Y = floor + 1m to 2.5m
+  * Doors: bottom at floor level, Y = door_height/2
 
 Output JSON format:
 {
   "type": "architecture",
   "style": "Modern/Medieval/Classical/etc",
-  "description": "Building description",
+  "description": "Building description with dimensions",
   "structure": {
-    "foundation": {...},
+    "foundation": {
+      "position": {"x": 0, "y": -0.2, "z": 0},  // Below ground
+      "scale": {"x": 12, "y": 0.4, "z": 10},
+      "material": "Concrete"
+    },
     "walls": [
       {
-        "position": {"x": 0, "y": 0, "z": 0},
-        "scale": {"x": 10, "y": 5, "z": 0.5},
-        "material": "Brick_Red/Concrete/etc"
+        "position": {"x": 0, "y": 2.5, "z": -5},  // Y = wall_height/2 = 5/2 = 2.5
+        "scale": {"x": 12, "y": 5, "z": 0.3},  // 12m wide, 5m tall, 0.3m thick
+        "material": "Brick_Red"
+      },
+      {
+        "position": {"x": -6, "y": 2.5, "z": 0},  // Side wall, offset by half width
+        "scale": {"x": 0.3, "y": 5, "z": 10},
+        "material": "Brick_Red"
       }
     ],
     "windows": [
       {
-        "position": {"x": 2, "y": 2, "z": 0},
-        "scale": {"x": 1, "y": 1.5, "z": 0.1}
+        "position": {"x": -3, "y": 2, "z": -5.15},  // MUST be ON wall surface, Y centered at typical window height
+        "scale": {"x": 1.5, "y": 2, "z": 0.1}  // Standard window size
       }
     ],
-    "roof": {...},
-    "details": [...]
+    "doors": [
+      {
+        "position": {"x": 0, "y": 1, "z": -5.15},  // Y = door_height/2 = 2/2 = 1
+        "scale": {"x": 1, "y": 2, "z": 0.1}
+      }
+    ],
+    "roof": {
+      "position": {"x": 0, "y": 5.2, "z": 0},  // Just above walls
+      "scale": {"x": 12.5, "y": 0.3, "z": 10.5},
+      "material": "Stone_Gray"
+    }
   }
-}`,
+}
+
+SPACING RULES FOR ARCHITECTURE:
+- Wall positions: Offset by width/2 or length/2 from center
+- Windows: Must be ON wall surface (Z slightly offset), evenly spaced (min 2m apart)
+- Floors: Each floor adds 3m to Y position
+- Roof: Top of highest wall + roof_thickness/2`,
 
     'environment': `${basePrompt}
 FOCUS: Natural or outdoor environment
@@ -215,10 +284,29 @@ Output JSON format:
  * @returns {string} PowerShell script content
  */
 export function generatePowerShellScript(analysis) {
+  // Validate and auto-fix spatial issues before generating script
+  let validatedAnalysis = { ...analysis };
+  
+  if (analysis.type === 'single_object' && analysis.components) {
+    const validation = validateScene(analysis.components);
+    if (!validation.valid || validation.warningCount > 0) {
+      console.log('[SPATIAL VALIDATOR] Found issues, auto-fixing...');
+      validatedAnalysis.components = autoFixPositioning(analysis.components);
+      console.log(`[SPATIAL VALIDATOR] Fixed ${validation.issueCount} overlaps and ${validation.warningCount} positioning warnings`);
+    }
+  } else if (analysis.type === 'complete_scene' && analysis.objects) {
+    const validation = validateScene(analysis.objects);
+    if (!validation.valid || validation.warningCount > 0) {
+      console.log('[SPATIAL VALIDATOR] Found issues, auto-fixing...');
+      validatedAnalysis.objects = autoFixPositioning(analysis.objects);
+      console.log(`[SPATIAL VALIDATOR] Fixed ${validation.issueCount} overlaps and ${validation.warningCount} positioning warnings`);
+    }
+  }
+
   let script = `# ============================================================
 # AUTO-GENERATED UNITY SCENE SCRIPT
-# Generated from image analysis
-# Type: ${analysis.type}
+# Generated from image analysis with spatial validation
+# Type: ${validatedAnalysis.type}
 # ============================================================
 
 # Import helper library
@@ -237,12 +325,14 @@ if (-not (Test-UnityConnection)) {
 
 Write-Host ""
 Write-Host "[INFO] Generating scene from image analysis..." -ForegroundColor Green
-Write-Host "[INFO] Type: ${analysis.type}" -ForegroundColor Cyan
+Write-Host "[INFO] Type: ${validatedAnalysis.type}" -ForegroundColor Cyan
+Write-Host "[INFO] Spatial validation: PASSED" -ForegroundColor Green
 Write-Host ""
 
 `;
 
   // Generate script based on analysis type
+  analysis = validatedAnalysis;
   switch (analysis.type) {
     case 'single_object':
       script += generateSingleObjectScript(analysis);
@@ -282,6 +372,11 @@ function generateSingleObjectScript(analysis) {
   let script = `# ============================================================
 # OBJECT: ${analysis.name || 'Unknown'}
 # Description: ${analysis.description || 'No description'}
+# ============================================================
+# SPATIAL CALCULATIONS:
+# - Y positions calculated for proper stacking (no overlaps/floating)
+# - Scale in Unity meters (1 unit = 1 meter)
+# - Objects validated for collisions before generation
 # ============================================================
 
 Write-Host "[PHASE 1] Creating main object..." -ForegroundColor Yellow
