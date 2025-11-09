@@ -13,13 +13,14 @@
 The **Unity AI Scene Builder Tool** is a revolutionary system that enables real-time text-to-world generation in Unity. Create complete 3D scenes, apply production-quality materials, optimize performance, and design entire levels using natural language commands.
 
 **Key Features:**
-- 🏰 **Luxury Villa Generator** - 400+ object Mediterranean villa in 3 minutes (NEW!)
+- 🌃 **Sci-Fi Capital Generator** - 800+ object cyberpunk metropolis with 20 ultra-tall skyscrapers (NEWEST!)
+- 🏰 **Luxury Villa Generator** - 400+ object Mediterranean villa in 3 minutes
 - 🌍 **Complete World Generation** - Generate entire playable worlds in seconds (10 biome types)
 - 🎨 **Materials System** - 14 predefined PBR materials + custom color/metallic/smoothness/emission
 - 🏗️ **Hierarchy System** - Organized scene structure + 60x performance optimization via mesh combining
 - 🧠 **Scene Intelligence** - Context-aware queries (find objects by name, tag, proximity)
 - ⚡ **Real-Time Generation** - Create complete worlds with terrain, lighting, and props in 2-10 seconds
-- 📚 **Complete Documentation** - 20,000+ words across comprehensive guides
+- 📚 **Complete Documentation** - 25,000+ words across comprehensive guides
 
 ---
 
@@ -60,7 +61,36 @@ The **Unity AI Scene Builder Tool** is a revolutionary system that enables real-
 
 ---
 
-## 🏰 Feature Showcase: Luxury Villa Generator
+## 🌃 Feature Showcase: Sci-Fi Capital of the Future (NEWEST!)
+
+**The Ultimate Ropeswing Paradise - Spider-Man Would Be Jealous!**
+
+```powershell
+.\create-scifi-capital.ps1
+```
+
+### What You Get
+- ✅ **20 Ultra-Tall Skyscrapers** - Buildings up to 150 units high (8x taller than villa!)
+- ✅ **4 Color-Coded Districts** - Cyan Tech, Magenta Business, Yellow Commerce, Orange Residential
+- ✅ **16 High-Altitude Skyways** - Perfect for web-slinging gameplay at 60-110 units height
+- ✅ **Grid Road Network** - Streets with lighting, 16 vehicles (hover cars + ground cars)
+- ✅ **Neon-Soaked Atmosphere** - 16 billboard ads, 24 floating orbs, 8 searchlights
+- ✅ **4 Building Styles** - Modern, Cylindrical, Pyramid, Setback architectures
+- ✅ **Perfect Swinging Geometry** - 40-unit spacing, multi-level gameplay (0-160 units)
+
+### Technical Achievement
+- **800+ Objects** creating massive cyberpunk metropolis
+- **4 Building Generation Functions** with sophisticated lighting systems
+- **200+ Swing Attachment Points** on edges, skyways, antennas
+- **Vertical Gameplay Focus** - 4 distinct height levels for progressive challenges
+- **Cyberpunk Aesthetic** - Blade Runner / Cyberpunk 2077 inspired
+- **Complete Documentation** - 11KB guide + comparison document
+
+**See:** `SCIFI_CAPITAL_GUIDE.md` for complete details and `SCIFI_CAPITAL_VS_OTHER_SCENES.md` for comparisons
+
+---
+
+## 🏰 Luxury Villa Generator
 
 **One command. Three minutes. Four hundred objects.**
 
@@ -75,16 +105,8 @@ The **Unity AI Scene Builder Tool** is a revolutionary system that enables real-
 - ✅ **30+ Light Sources** - Chandeliers, lamps, emissive elements
 - ✅ **Complete Gardens** - Trees, fountain, pathways, hedges
 - ✅ **Balconies & Stairs** - 2 balconies with railings, 2 staircases
-- ✅ **PBR Materials** - Realistic glass, wood, metal, stone
 
-### Technical Achievement
-- **400+ Objects** in hierarchical structure
-- **7 Custom Functions** for reusable components (windows, doors, columns, etc.)
-- **30+ Emissive Lights** with HDR emission
-- **Professional Organization** with 10+ nested groups
-- **Complete Documentation** - 13KB comprehensive guide
-
-**See:** `LUXURY_VILLA_GUIDE.md` for complete details
+**See:** `VILLA_IMPLEMENTATION_COMPLETE.md` for complete details
 
 ---
 
