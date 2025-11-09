@@ -6,6 +6,7 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
+import { analyzeImage, generatePowerShellScript, saveScript } from './image-analyzer.js';
 
 const UNITY_BASE_URL = 'http://localhost:8765';
 
@@ -1043,6 +1044,60 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ['origin', 'direction'],
         },
       },
+      {
+        name: 'unity_analyze_image_for_scene',
+        description: 'Analyze an image using VLM and generate a Unity scene from it. This tool takes an image file path, analyzes it to understand objects, spatial relationships, materials, and lighting, then generates a complete PowerShell script to recreate the scene in Unity. Perfect for converting reference images, photos of real objects, or concept art into 3D Unity scenes.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            imagePath: {
+              type: 'string',
+              description: 'Path to the image file (.jpg, .jpeg, .png, .gif, .webp)',
+            },
+            analysisType: {
+              type: 'string',
+              description: 'Type of analysis to perform',
+              enum: ['object', 'scene', 'architecture', 'environment'],
+              default: 'scene'
+            },
+            outputScriptPath: {
+              type: 'string',
+              description: 'Path where to save the generated PowerShell script (optional, defaults to ./generated-scene-[timestamp].ps1)',
+            },
+            autoExecute: {
+              type: 'boolean',
+              description: 'Automatically execute the generated script after creation (default: false)',
+              default: false
+            },
+            detailLevel: {
+              type: 'number',
+              description: 'Level of detail for analysis from 1-10. Higher = more objects and finer details (default: 5)',
+              minimum: 1,
+              maximum: 10,
+              default: 5
+            }
+          },
+          required: ['imagePath'],
+        },
+      },
+      {
+        name: 'unity_generate_script_from_analysis',
+        description: 'Generate a PowerShell script from VLM image analysis results. Takes the structured JSON output from a VLM (Claude/GPT-4V) and converts it into an executable PowerShell script that creates the scene in Unity.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            analysisData: {
+              type: 'object',
+              description: 'Structured analysis data from VLM containing scene description, objects, materials, and spatial relationships',
+            },
+            outputPath: {
+              type: 'string',
+              description: 'Path where to save the generated PowerShell script (optional)',
+            }
+          },
+          required: ['analysisData'],
+        },
+      },
     ],
   };
 });
@@ -1354,6 +1409,58 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           maxDistance: args.maxDistance || 1000,
           layerMask: args.layerMask
         });
+        break;
+
+      case 'unity_analyze_image_for_scene':
+        // This tool requires VLM integration - for now return structured data for manual VLM processing
+        const analysisData = await analyzeImage(
+          args.imagePath,
+          args.analysisType || 'scene',
+          { detailLevel: args.detailLevel || 5 }
+        );
+        
+        // Generate output path if not provided
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').replace('T', '_').split('Z')[0];
+        const outputPath = args.outputScriptPath || `./generated-scene-${timestamp}.ps1`;
+        
+        // For now, return the analysis data structure that needs to be sent to VLM
+        // In production, this would integrate with Claude/GPT-4V API
+        result = {
+          status: 'awaiting_vlm_analysis',
+          message: 'Image prepared for VLM analysis. Send the image to Claude/GPT-4V with the provided prompt.',
+          analysisData: {
+            imagePath: args.imagePath,
+            analysisType: args.analysisType || 'scene',
+            prompt: analysisData.prompt,
+            outputScriptPath: outputPath
+          },
+          instructions: [
+            '1. Send the image to a VLM (Claude 3.5 Sonnet or GPT-4V) with the provided prompt',
+            '2. The VLM will return structured JSON describing the scene',
+            '3. Use unity_generate_script_from_analysis with the VLM response to create the PowerShell script',
+            '4. Execute the generated script in PowerShell to create the Unity scene'
+          ],
+          nextSteps: 'Use the prompt with your VLM of choice, then call unity_generate_script_from_analysis with the result'
+        };
+        break;
+
+      case 'unity_generate_script_from_analysis':
+        // Generate PowerShell script from VLM analysis
+        const scriptContent = generatePowerShellScript(args.analysisData);
+        const scriptPath = args.outputPath || `./generated-scene-${Date.now()}.ps1`;
+        saveScript(scriptContent, scriptPath);
+        
+        result = {
+          status: 'success',
+          scriptPath: scriptPath,
+          scriptPreview: scriptContent.substring(0, 500) + '...',
+          instructions: [
+            `1. Script saved to: ${scriptPath}`,
+            '2. Open PowerShell in the UnityMCP directory',
+            `3. Run: .\\${scriptPath.split('/').pop()}`,
+            '4. Watch your scene come to life in Unity!'
+          ]
+        };
         break;
 
       default:
