@@ -86,8 +86,11 @@ Control Unity Editor with advanced capabilities: rotation precision, object arra
 - **[ADVANCED_TOOLS_QUICK_REF.md](ADVANCED_TOOLS_QUICK_REF.md)** - Quick reference card
 - **[V2_DOCUMENTATION.md](V2_DOCUMENTATION.md)** - Materials & hierarchy system
 - **[WORLD_GENERATION_GUIDE.md](WORLD_GENERATION_GUIDE.md)** - Biome generation
-- **[PARKOUR_COURSE_GUIDE.md](PARKOUR_COURSE_GUIDE.md)** - Complete parkour system (NEW!)
-- **[PARKOUR_QUICK_REF.md](PARKOUR_QUICK_REF.md)** - Parkour quick reference (NEW!)
+- **[PARKOUR_COURSE_GUIDE.md](PARKOUR_COURSE_GUIDE.md)** - Complete parkour system
+- **[PARKOUR_QUICK_REF.md](PARKOUR_QUICK_REF.md)** - Parkour quick reference
+- **[EGYPTIAN_PYRAMID_WORLD_GUIDE.md](EGYPTIAN_PYRAMID_WORLD_GUIDE.md)** - Egyptian world complete guide (NEW!)
+- **[EGYPTIAN_QUICK_START.md](EGYPTIAN_QUICK_START.md)** - Egyptian world quick start (NEW!)
+- **[EGYPTIAN_TOOLS_REFERENCE.md](EGYPTIAN_TOOLS_REFERENCE.md)** - Advanced construction tools (NEW!)
 
 ## 🎮 Demo Scripts
 
@@ -110,11 +113,17 @@ Control Unity Editor with advanced capabilities: rotation precision, object arra
 # Ultimate complete world with everything
 .\create-ultimate-complete-world.ps1
 
-# Comprehensive parkour course (NEW!)
+# Comprehensive parkour course
 .\create-parkour-course.ps1
 
 # Test parkour course validation
 .\test-parkour-course.ps1
+
+# Egyptian Pyramid World - Ultra Complex Scene (NEW!)
+.\create-egyptian-pyramid-world.ps1
+
+# Egyptian world enhancements demo (NEW!)
+.\demo-egyptian-enhancements.ps1
 ```
 
 ## 🏃 Parkour Course System (NEW!)
@@ -152,6 +161,53 @@ Control Unity Editor with advanced capabilities: rotation precision, object arra
 6. **Phase 7:** Finalization (56 objects with checkpoints)
 
 **See [PARKOUR_COURSE_GUIDE.md](PARKOUR_COURSE_GUIDE.md) for complete documentation.**
+
+## 🏜️ Egyptian Pyramid World (NEW!)
+
+**Ultra-Complex Ancient Civilization Scene - Most Advanced in Toolkit**
+
+### Features
+- **6 Pyramids** (3 Great Pyramids with full interiors + 3 Queen's Pyramids)
+- **3 Enterable Pyramid Interiors** with treasure chambers and torch-lit corridors
+- **Great Sphinx** statue with detailed features
+- **Central Battle Altar** with Anubis statues and ceremonial fires
+- **6 Obelisks** with golden pyramidions
+- **25 Palm Trees** scattered across the map
+- **Stone Pathways** connecting all major structures
+- **50+ Emissive Torches** for lighting and atmosphere
+- **1000+ Total Objects** creating a complete playable world
+
+### New Essential Tools Library
+**7 Advanced Construction Functions:**
+1. `Build-Archway` - Square/Rounded/Pointed archways
+2. `Build-Staircase` - Multi-directional stairs
+3. `Build-CircularWall` - Solid/Pillars/Gaps circular walls
+4. `Build-Colonnade` - Classical columns with roofs
+5. `Build-Brazier` - Emissive fire stands
+6. `Build-TerrainMound` - Hills and dunes
+7. `Copy-Object` - Object duplication utility
+
+### Quick Start
+```powershell
+# Create complete Egyptian world
+.\create-egyptian-pyramid-world.ps1
+
+# Add enhancements (temples, marketplace, ritual circles)
+.\demo-egyptian-enhancements.ps1
+
+# Validate installation
+.\test-egyptian-pyramid-world.ps1
+```
+
+### Highlights
+- ✅ **First fully enterable structures** in the toolkit
+- ✅ **Most complex scene** (1000+ objects)
+- ✅ **Advanced lighting system** (50+ emissive flames)
+- ✅ **Complete gameplay environment** (exploration + combat)
+- ✅ **60x performance optimization** potential via mesh combining
+- ✅ **Comprehensive documentation** (3 guides + API reference)
+
+**See [EGYPTIAN_PYRAMID_WORLD_GUIDE.md](EGYPTIAN_PYRAMID_WORLD_GUIDE.md) for complete documentation.**
 
 ## 🎯 Real-World Examples
 
