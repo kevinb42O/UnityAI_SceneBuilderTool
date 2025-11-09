@@ -57,8 +57,15 @@ export async function analyzeImage(imagePath, analysisType = 'scene', options = 
  * Generate VLM prompt for image analysis
  */
 function generateAnalysisPrompt(analysisType, options) {
-  const basePrompt = `You are an expert at analyzing images and generating Unity scene descriptions. 
-Your task is to analyze the provided image and generate a structured JSON response that can be used to create a 3D scene in Unity.
+  const basePrompt = `You are an EXPERT at analyzing images and generating EXACT Unity scene replications. 
+Your task is to analyze the provided image and generate a DETAILED JSON response that will recreate THIS SPECIFIC object/building/scene in Unity - NOT a generic approximation.
+
+GOAL: EXACT VISUAL REPLICATION
+- Extract EVERY visible detail, color, proportion
+- Identify distinguishing features that make THIS object unique
+- Capture specific architectural elements, decorative details, unique shapes
+- Match colors PRECISELY using RGB values from the image
+- Replicate proportions EXACTLY as they appear
 
 Available Unity primitives: Cube, Sphere, Cylinder, Capsule, Plane, Quad
 Available materials: Wood_Oak, Metal_Steel, Metal_Gold, Metal_Bronze, Glass_Clear, Brick_Red, Concrete, Stone_Gray, Grass_Green, Water_Blue, Rubber_Black, Plastic_White, Emissive_Blue, Emissive_Red
@@ -74,50 +81,103 @@ CRITICAL SPATIAL RULES:
 7. For "next to": Same Y, different X or Z with spacing = (obj1_width + obj2_width)/2 + gap
 8. For "inside": Parent-child relationship, child position relative to parent center
 
+DETAIL EXTRACTION REQUIREMENTS:
+- Colors: Extract exact RGB values from dominant colors in image
+- Proportions: Measure relative sizes of all components accurately
+- Unique features: Identify what makes THIS object different (curves, angles, decorations)
+- Surface properties: Detect if metallic (cars, metal buildings), smooth (glass), rough (stone, brick)
+- Repetitive patterns: Count windows, columns, wheels, etc. - use arrays for efficiency
+- Fine details: Small decorative elements, trim, railings, ornaments
+
 `;
 
   const typePrompts = {
     'object': `${basePrompt}
-FOCUS: Single object or statue
-- Identify the main object
-- Approximate its shape using Unity primitives (Cube, Sphere, Cylinder, etc.)
-- Determine REALISTIC scale in meters (small object: 0.1-0.5m, furniture: 0.5-2m, building: 2-20m)
-- Identify material properties (color, metallic, smoothness)
-- Break complex shapes into multiple primitive combinations
-- CRITICAL: Calculate Y positions so objects don't overlap or float
-  * Base/pedestal: Y = height/2 (sits on ground)
-  * Parts on top: Y = previous_Y + previous_height/2 + current_height/2
-  * Example: Pedestal (height 1m, Y=0.5), Body on pedestal (height 2m, Y=0.5+0.5+1=2)
+FOCUS: EXACT REPLICATION of single object (car, statue, furniture, landmark)
+GOAL: Someone looking at the generated 3D model should recognize THIS SPECIFIC object, not a generic version.
+
+ANALYSIS STEPS:
+1. IDENTIFY OBJECT TYPE: What exactly is this? (e.g., "1965 Ford Mustang", "Statue of Liberty", "Eiffel Tower", not just "car", "statue", "tower")
+2. MEASURE PROPORTIONS: Get exact width:height:depth ratios from the image
+3. EXTRACT COLORS: Sample RGB values from major surfaces (body, trim, details)
+4. IDENTIFY UNIQUE FEATURES: What makes THIS object recognizable?
+   - Cars: Headlight shape, grille design, body curves, wheel style, hood ornaments
+   - Buildings: Window patterns, architectural style, unique shapes, spires, domes
+   - Statues: Pose, clothing folds, facial features, base design, decorative elements
+5. COUNT REPETITIVE ELEMENTS: Windows, wheels, columns, decorations (use arrays)
+6. DETECT MATERIALS: Metal (cars, modern buildings), glass (windows), stone (monuments), wood, plastic
+7. BREAK INTO PRIMITIVES: Use MANY small primitives for accuracy (20-50+ components for complex objects)
+   - Curved surfaces: Use multiple rotated cylinders/spheres
+   - Angular shapes: Use cubes with precise rotations
+   - Round elements: Spheres, cylinders, capsules
+8. CALCULATE EXACT POSITIONS: Follow spatial rules to prevent overlaps
 
 Output JSON format:
 {
   "type": "single_object",
-  "name": "ObjectName",
-  "description": "Brief description with estimated real-world size",
+  "name": "SPECIFIC Name (e.g., 'Eiffel Tower', '1967 Chevy Impala', 'Atomium Brussels')",
+  "description": "Detailed description highlighting UNIQUE identifying features that make this recognizable",
+  "reference_colors": [
+    {"name": "primary_body", "rgb": {"r": 0.15, "g": 0.15, "b": 0.18}, "description": "dark metallic blue"},
+    {"name": "trim", "rgb": {"r": 0.9, "g": 0.9, "b": 0.9}, "description": "chrome trim"},
+    {"name": "accent", "rgb": {"r": 0.8, "g": 0.1, "b": 0.1}, "description": "red details"}
+  ],
+  "unique_features": [
+    "Distinctive curved hood with chrome strip",
+    "Circular headlights with chrome bezels",
+    "Dual exhaust pipes visible at rear"
+  ],
   "components": [
     {
+      "name": "Main_Body",
       "primitive": "Cube/Sphere/Cylinder",
-      "position": {"x": 0, "y": 0.5, "z": 0},  // Y MUST be calculated: height/2 for ground objects
-      "scale": {"x": 1, "y": 1, "z": 1},  // Real-world meters, not arbitrary
+      "position": {"x": 0, "y": 0.5, "z": 0},  // Y MUST be calculated
+      "scale": {"x": 1, "y": 1, "z": 1},  // EXACT real-world meters
       "rotation": {"x": 0, "y": 0, "z": 0},
       "material": {
         "preset": "Material_Name or null",
-        "color": {"r": 0.5, "g": 0.5, "b": 0.5},
-        "metallic": 0.0-1.0,
-        "smoothness": 0.0-1.0
-      }
+        "color": {"r": 0.15, "g": 0.15, "b": 0.18},  // Use EXTRACTED colors
+        "metallic": 0.8,  // High for cars, low for stone
+        "smoothness": 0.9  // High for cars/glass, low for rough surfaces
+      },
+      "represents": "Main car body / building facade / statue torso"
     }
   ]
 }
 
-EXAMPLE - Statue on pedestal (3m tall total):
+EXAMPLE - 1967 Chevrolet Impala (EXACT replication, not generic car):
 {
+  "name": "1967 Chevrolet Impala",
+  "description": "Classic American muscle car with distinctive long hood, chrome bumpers, and dual headlights",
+  "reference_colors": [
+    {"name": "body", "rgb": {"r": 0.1, "g": 0.1, "b": 0.15}, "description": "midnight blue metallic"},
+    {"name": "chrome", "rgb": {"r": 0.9, "g": 0.9, "b": 0.92}, "description": "chrome trim"},
+    {"name": "glass", "rgb": {"r": 0.2, "g": 0.3, "b": 0.4}, "description": "tinted windows"}
+  ],
+  "unique_features": [
+    "Long sloping hood characteristic of 1967 model",
+    "Dual circular headlights with chrome bezels",
+    "Horizontal chrome grille bars",
+    "Chrome bumper wrapping around front",
+    "Fastback roofline",
+    "Dual tail lights"
+  ],
   "components": [
-    {"primitive": "Cylinder", "position": {"x": 0, "y": 0.5, "z": 0}, "scale": {"x": 1, "y": 1, "z": 1}},  // Pedestal: 1m tall, Y=0.5
-    {"primitive": "Cube", "position": {"x": 0, "y": 2, "z": 0}, "scale": {"x": 0.8, "y": 2, "z": 0.6}},  // Body: 2m tall, Y=0.5+0.5+1=2
-    {"primitive": "Sphere", "position": {"x": 0, "y": 3.3, "z": 0}, "scale": {"x": 0.5, "y": 0.6, "z": 0.5}}  // Head: 0.6m tall, Y=2+1+0.3=3.3
+    {"name": "Body_Main", "primitive": "Cube", "position": {"x": 0, "y": 0.6, "z": 0}, "scale": {"x": 2, "y": 0.8, "z": 5}, "material": {"color": {"r": 0.1, "g": 0.1, "b": 0.15}, "metallic": 0.9, "smoothness": 0.95}},
+    {"name": "Hood", "primitive": "Cube", "position": {"x": 0, "y": 0.75, "z": 1.8}, "scale": {"x": 1.8, "y": 0.1, "z": 1.5}, "rotation": {"x": -5, "y": 0, "z": 0}, "material": {"color": {"r": 0.1, "g": 0.1, "b": 0.15}, "metallic": 0.9, "smoothness": 0.95}},
+    {"name": "Roof", "primitive": "Cube", "position": {"x": 0, "y": 1.3, "z": -0.5}, "scale": {"x": 1.6, "y": 0.05, "z": 2}, "material": {"color": {"r": 0.1, "g": 0.1, "b": 0.15}, "metallic": 0.9, "smoothness": 0.95}},
+    {"name": "Windshield", "primitive": "Cube", "position": {"x": 0, "y": 1.2, "z": 0.8}, "scale": {"x": 1.5, "y": 0.6, "z": 0.05}, "rotation": {"x": -25, "y": 0, "z": 0}, "material": {"preset": "Glass_Clear"}},
+    {"name": "Headlight_L", "primitive": "Sphere", "position": {"x": -0.7, "y": 0.5, "z": 2.4}, "scale": {"x": 0.15, "y": 0.15, "z": 0.1}, "material": {"color": {"r": 1, "g": 1, "b": 0.95}, "metallic": 0, "smoothness": 1}},
+    {"name": "Headlight_R", "primitive": "Sphere", "position": {"x": 0.7, "y": 0.5, "z": 2.4}, "scale": {"x": 0.15, "y": 0.15, "z": 0.1}, "material": {"color": {"r": 1, "g": 1, "b": 0.95}, "metallic": 0, "smoothness": 1}},
+    {"name": "Grille", "primitive": "Cube", "position": {"x": 0, "y": 0.45, "z": 2.45}, "scale": {"x": 1.4, "y": 0.3, "z": 0.05}, "material": {"preset": "Metal_Steel", "metallic": 1, "smoothness": 0.8}},
+    {"name": "Wheel_FL", "primitive": "Cylinder", "position": {"x": -0.8, "y": 0.35, "z": 1.5}, "scale": {"x": 0.35, "y": 0.2, "z": 0.35}, "rotation": {"x": 0, "y": 0, "z": 90}, "material": {"preset": "Rubber_Black"}},
+    {"name": "Wheel_FR", "primitive": "Cylinder", "position": {"x": 0.8, "y": 0.35, "z": 1.5}, "scale": {"x": 0.35, "y": 0.2, "z": 0.35}, "rotation": {"x": 0, "y": 0, "z": 90}, "material": {"preset": "Rubber_Black"}},
+    {"name": "Wheel_RL", "primitive": "Cylinder", "position": {"x": -0.8, "y": 0.35, "z": -1.5}, "scale": {"x": 0.35, "y": 0.2, "z": 0.35}, "rotation": {"x": 0, "y": 0, "z": 90}, "material": {"preset": "Rubber_Black"}},
+    {"name": "Wheel_RR", "primitive": "Cylinder", "position": {"x": 0.8, "y": 0.35, "z": -1.5}, "scale": {"x": 0.35, "y": 0.2, "z": 0.35}, "rotation": {"x": 0, "y": 0, "z": 90}, "material": {"preset": "Rubber_Black"}}
   ]
-}`,
+}
+
+KEY PRINCIPLE: Use 20-50+ components for accuracy. More components = better replication of unique features.`,
 
     'scene': `${basePrompt}
 FOCUS: Complete scene with multiple objects
@@ -177,67 +237,162 @@ EXAMPLE - Park bench with trees:
 }`,
 
     'architecture': `${basePrompt}
-FOCUS: Building or architectural structure
-- Identify structural elements (walls, floors, roof, windows, doors)
-- Detect architectural style
-- Measure proportions and relationships using real-world building standards
-- Identify material types (brick, concrete, wood, glass)
-- Detect repetitive elements (windows, columns)
-- CRITICAL: Calculate positions to prevent overlaps
-  * Floor height: typically 3m per floor
-  * Wall thickness: 0.2-0.5m
-  * Wall Y position: floor_height + wall_height/2
-  * Windows: must be INSIDE wall space, Y = floor + 1m to 2.5m
-  * Doors: bottom at floor level, Y = door_height/2
+FOCUS: EXACT REPLICATION of specific building/landmark (White House, Eiffel Tower, Atomium, specific pier, etc.)
+GOAL: Recreate THIS SPECIFIC building with all identifying features, not a generic building.
+
+ANALYSIS STEPS:
+1. IDENTIFY LANDMARK: What exactly is this? Name it specifically if recognizable
+2. ARCHITECTURAL STYLE: Gothic, Art Deco, Modern, Classical, etc. - be specific
+3. SIGNATURE FEATURES: What makes THIS building instantly recognizable?
+   - Unique shapes (domes, spires, arches, curves)
+   - Distinctive elements (clock towers, statues, ornaments)
+   - Characteristic proportions (tall/wide, symmetrical/asymmetrical)
+   - Iconic details (columns, balconies, decorative trim)
+4. COUNT REPETITIVE ELEMENTS: 
+   - Windows per floor, windows per facade
+   - Columns in row
+   - Decorative elements
+   - Use arrays for efficiency
+5. EXTRACT EXACT COLORS: Sample from image
+   - Wall color (brick red, white marble, gray concrete)
+   - Roof color (dark gray, copper green, red tile)
+   - Trim/accent colors (gold, white, dark)
+6. MEASURE PROPORTIONS: Width:height ratios, window spacing, floor heights
+7. MATERIAL DETECTION: Brick, stone, concrete, glass, metal
+8. BREAK INTO MANY COMPONENTS: Use 50-200+ primitives for landmarks
+   - Base/foundation
+   - Each wall section
+   - Each window/door individually or as array
+   - Roof sections
+   - Decorative elements (spires, statues, trim)
+   - Unique architectural features
 
 Output JSON format:
 {
   "type": "architecture",
-  "style": "Modern/Medieval/Classical/etc",
-  "description": "Building description with dimensions",
+  "name": "SPECIFIC NAME (e.g., 'White House', 'Eiffel Tower', 'Atomium Brussels', 'Blankenberge Pier')",
+  "style": "Specific architectural style (e.g., 'Neoclassical', 'Art Nouveau', 'Postmodern Atomic Age')",
+  "description": "Detailed description highlighting unique identifying features of THIS building",
+  "reference_colors": [
+    {"name": "primary", "rgb": {"r": 0.95, "g": 0.95, "b": 0.98}, "description": "white marble"},
+    {"name": "trim", "rgb": {"r": 0.85, "g": 0.75, "b": 0.55}, "description": "gold/brass accents"},
+    {"name": "roof", "rgb": {"r": 0.15, "g": 0.15, "b": 0.17}, "description": "dark gray/black"}
+  ],
+  "signature_features": [
+    "Iconic portico with 6 massive columns",
+    "Triangular pediment above entrance",
+    "Symmetrical wings extending left and right",
+    "Rectangular windows with white frames in precise grid"
+  ],
   "structure": {
     "foundation": {
-      "position": {"x": 0, "y": -0.2, "z": 0},  // Below ground
-      "scale": {"x": 12, "y": 0.4, "z": 10},
-      "material": "Concrete"
+      "position": {"x": 0, "y": -0.3, "z": 0},
+      "scale": {"x": 52, "y": 0.6, "z": 26},
+      "material": {"preset": "Concrete"}
     },
     "walls": [
       {
-        "position": {"x": 0, "y": 2.5, "z": -5},  // Y = wall_height/2 = 5/2 = 2.5
-        "scale": {"x": 12, "y": 5, "z": 0.3},  // 12m wide, 5m tall, 0.3m thick
-        "material": "Brick_Red"
+        "name": "Front_Main_Wall",
+        "position": {"x": 0, "y": 7.5, "z": -13},
+        "scale": {"x": 52, "y": 15, "z": 0.5},
+        "material": {"color": {"r": 0.95, "g": 0.95, "b": 0.98}, "metallic": 0, "smoothness": 0.6},
+        "represents": "Main facade - white painted stone"
       },
       {
-        "position": {"x": -6, "y": 2.5, "z": 0},  // Side wall, offset by half width
-        "scale": {"x": 0.3, "y": 5, "z": 10},
-        "material": "Brick_Red"
+        "name": "Rear_Wall",
+        "position": {"x": 0, "y": 7.5, "z": 13},
+        "scale": {"x": 52, "y": 15, "z": 0.5},
+        "material": {"color": {"r": 0.95, "g": 0.95, "b": 0.98}, "metallic": 0, "smoothness": 0.6}
       }
     ],
-    "windows": [
-      {
-        "position": {"x": -3, "y": 2, "z": -5.15},  // MUST be ON wall surface, Y centered at typical window height
-        "scale": {"x": 1.5, "y": 2, "z": 0.1}  // Standard window size
-      }
-    ],
-    "doors": [
-      {
-        "position": {"x": 0, "y": 1, "z": -5.15},  // Y = door_height/2 = 2/2 = 1
-        "scale": {"x": 1, "y": 2, "z": 0.1}
-      }
-    ],
+    "columns": {
+      "type": "array",
+      "template": {
+        "primitive": "Cylinder",
+        "scale": {"x": 0.8, "y": 10, "z": 0.8},
+        "material": {"color": {"r": 0.95, "g": 0.95, "b": 0.98}, "metallic": 0, "smoothness": 0.7}
+      },
+      "positions": [
+        {"x": -10, "y": 5, "z": -13.5},
+        {"x": -6, "y": 5, "z": -13.5},
+        {"x": -2, "y": 5, "z": -13.5},
+        {"x": 2, "y": 5, "z": -13.5},
+        {"x": 6, "y": 5, "z": -13.5},
+        {"x": 10, "y": 5, "z": -13.5}
+      ],
+      "represents": "Iconic front portico columns"
+    },
+    "windows": {
+      "type": "grid_array",
+      "template": {
+        "primitive": "Cube",
+        "scale": {"x": 1.2, "y": 2.5, "z": 0.15},
+        "material": {"preset": "Glass_Clear"}
+      },
+      "pattern": {
+        "rows": 3,
+        "columns": 12,
+        "spacing": {"x": 4, "y": 4},
+        "start_position": {"x": -22, "y": 5, "z": -13.3}
+      },
+      "represents": "Symmetrical window grid on facade"
+    },
     "roof": {
-      "position": {"x": 0, "y": 5.2, "z": 0},  // Just above walls
-      "scale": {"x": 12.5, "y": 0.3, "z": 10.5},
-      "material": "Stone_Gray"
-    }
+      "name": "Main_Roof",
+      "position": {"x": 0, "y": 15.3, "z": 0},
+      "scale": {"x": 53, "y": 0.6, "z": 27},
+      "material": {"color": {"r": 0.15, "g": 0.15, "b": 0.17}, "metallic": 0.3, "smoothness": 0.5},
+      "represents": "Flat roof with dark finish"
+    },
+    "unique_elements": [
+      {
+        "name": "Triangular_Pediment",
+        "primitive": "Cube",
+        "position": {"x": 0, "y": 11, "z": -13.8},
+        "scale": {"x": 14, "y": 2, "z": 0.3},
+        "rotation": {"x": 0, "y": 0, "z": 0},
+        "material": {"color": {"r": 0.95, "g": 0.95, "b": 0.98}, "metallic": 0, "smoothness": 0.6},
+        "represents": "Triangular pediment above entrance"
+      }
+    ]
   }
 }
 
-SPACING RULES FOR ARCHITECTURE:
-- Wall positions: Offset by width/2 or length/2 from center
-- Windows: Must be ON wall surface (Z slightly offset), evenly spaced (min 2m apart)
-- Floors: Each floor adds 3m to Y position
-- Roof: Top of highest wall + roof_thickness/2`,
+EXAMPLE - Atomium Brussels (EXACT landmark replication):
+{
+  "name": "Atomium Brussels",
+  "style": "Postmodern Atomic Age Architecture",
+  "description": "Iconic Belgian landmark representing iron crystal magnified 165 billion times, consists of 9 spheres connected by tubes",
+  "reference_colors": [
+    {"name": "spheres", "rgb": {"r": 0.85, "g": 0.85, "b": 0.88}, "description": "polished stainless steel"},
+    {"name": "tubes", "rgb": {"r": 0.82, "g": 0.82, "b": 0.85}, "description": "metallic silver"}
+  ],
+  "signature_features": [
+    "9 spheres arranged in unit cell of iron crystal structure",
+    "Each sphere 18m diameter",
+    "Connected by tubes containing escalators",
+    "Distinctive angular geometry at 54.74° angles",
+    "Highly reflective metallic surface"
+  ],
+  "structure": {
+    "spheres": [
+      {"name": "Sphere_Center", "primitive": "Sphere", "position": {"x": 0, "y": 51, "z": 0}, "scale": {"x": 18, "y": 18, "z": 18}, "material": {"preset": "Metal_Steel", "metallic": 1, "smoothness": 0.95}},
+      {"name": "Sphere_Top", "primitive": "Sphere", "position": {"x": 0, "y": 102, "z": 0}, "scale": {"x": 18, "y": 18, "z": 18}, "material": {"preset": "Metal_Steel", "metallic": 1, "smoothness": 0.95}},
+      {"name": "Sphere_Bottom", "primitive": "Sphere", "position": {"x": 0, "y": 9, "z": 0}, "scale": {"x": 18, "y": 18, "z": 18}, "material": {"preset": "Metal_Steel", "metallic": 1, "smoothness": 0.95}},
+      {"name": "Sphere_NE", "primitive": "Sphere", "position": {"x": 29.7, "y": 51, "z": 29.7}, "scale": {"x": 18, "y": 18, "z": 18}, "material": {"preset": "Metal_Steel", "metallic": 1, "smoothness": 0.95}},
+      {"name": "Sphere_NW", "primitive": "Sphere", "position": {"x": -29.7, "y": 51, "z": 29.7}, "scale": {"x": 18, "y": 18, "z": 18}, "material": {"preset": "Metal_Steel", "metallic": 1, "smoothness": 0.95}},
+      {"name": "Sphere_SE", "primitive": "Sphere", "position": {"x": 29.7, "y": 51, "z": -29.7}, "scale": {"x": 18, "y": 18, "z": 18}, "material": {"preset": "Metal_Steel", "metallic": 1, "smoothness": 0.95}},
+      {"name": "Sphere_SW", "primitive": "Sphere", "position": {"x": -29.7, "y": 51, "z": -29.7}, "scale": {"x": 18, "y": 18, "z": 18}, "material": {"preset": "Metal_Steel", "metallic": 1, "smoothness": 0.95}},
+      {"name": "Sphere_Top_Front", "primitive": "Sphere", "position": {"x": 0, "y": 76.5, "z": 29.7}, "scale": {"x": 18, "y": 18, "z": 18}, "material": {"preset": "Metal_Steel", "metallic": 1, "smoothness": 0.95}},
+      {"name": "Sphere_Top_Back", "primitive": "Sphere", "position": {"x": 0, "y": 76.5, "z": -29.7}, "scale": {"x": 18, "y": 18, "z": 18}, "material": {"preset": "Metal_Steel", "metallic": 1, "smoothness": 0.95}}
+    ],
+    "connecting_tubes": [
+      {"name": "Tube_Center_Top", "primitive": "Cylinder", "position": {"x": 0, "y": 76.5, "z": 0}, "scale": {"x": 3, "y": 51, "z": 3}, "rotation": {"x": 0, "y": 0, "z": 0}, "material": {"preset": "Metal_Steel", "metallic": 0.9, "smoothness": 0.9}}
+    ]
+  }
+}
+
+KEY PRINCIPLE: Use 50-200+ components for landmark accuracy. Identify and recreate ALL signature features that make it recognizable.`,
 
     'environment': `${basePrompt}
 FOCUS: Natural or outdoor environment

@@ -11,9 +11,9 @@ param(
     [ValidateSet("object", "scene", "architecture", "environment")]
     [string]$AnalysisType = "scene",
     
-    [Parameter(HelpMessage="Detail level (1-10): Higher = more objects and details")]
+    [Parameter(HelpMessage="Detail level (1-10): Higher = more primitives and exact replication. Default 8 for high accuracy.")]
     [ValidateRange(1, 10)]
-    [int]$DetailLevel = 5,
+    [int]$DetailLevel = 8,
     
     [Parameter(HelpMessage="Output path for generated script")]
     [string]$OutputPath = "",
@@ -87,7 +87,15 @@ Available materials: Wood_Oak, Metal_Steel, Metal_Gold, Metal_Bronze, Glass_Clea
 Available patterns: Linear array, Circular array, Grid array
 
 ANALYSIS TYPE: $AnalysisType
-DETAIL LEVEL: $DetailLevel (1=minimal, 10=maximum detail)
+DETAIL LEVEL: $DetailLevel (1=minimal 2-5 components, 5=medium 10-20 components, 8=high 30-60 components, 10=maximum 100+ components)
+
+CRITICAL: EXACT VISUAL REPLICATION REQUIRED
+- Your goal is to recreate THIS SPECIFIC object/building from the image, NOT a generic version
+- Identify the object/building by name if recognizable (e.g., "1967 Chevy Impala", "White House", "Eiffel Tower")
+- Extract EXACT colors from the image as RGB values
+- Identify ALL distinguishing features that make this object unique
+- Use DetailLevel to determine component count: Higher level = more primitives = more accuracy
+- For DetailLevel 8+: Use 30-100+ primitives to capture fine details
 "@
 
 # Add type-specific instructions
