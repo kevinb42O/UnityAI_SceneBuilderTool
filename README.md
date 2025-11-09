@@ -10,10 +10,11 @@
 
 ## 🚀 Overview
 
-The **Unity AI Scene Builder Tool** is a revolutionary system that enables real-time text-to-world generation in Unity. Create complete 3D scenes, apply production-quality materials, optimize performance, and design entire levels using natural language commands.
+The **Unity AI Scene Builder Tool** is a revolutionary system that enables real-time text-to-world generation in Unity. Create complete 3D scenes, apply production-quality materials, optimize performance, and design entire levels using natural language commands. **NEW: Transform any image into a Unity scene using VLM (Vision Language Models)!**
 
 **Key Features:**
-- 🏛️ **Geodesic Dome with Oculus** - Mathematically perfect 200-unit radius dome with divine lighting (NEWEST!)
+- 📸 **Image-to-Scene Generation** - Upload any image and generate Unity scenes with VLM (Claude/GPT-4V) (NEWEST!)
+- 🏛️ **Geodesic Dome with Oculus** - Mathematically perfect 200-unit radius dome with divine lighting
 - 🌃 **Sci-Fi Capital Generator** - 800+ object cyberpunk metropolis with 20 ultra-tall skyscrapers
 - 🏰 **Luxury Villa Generator** - 400+ object Mediterranean villa in 3 minutes
 - 🌍 **Complete World Generation** - Generate entire playable worlds in seconds (10 biome types)
@@ -21,7 +22,7 @@ The **Unity AI Scene Builder Tool** is a revolutionary system that enables real-
 - 🏗️ **Hierarchy System** - Organized scene structure + 60x performance optimization via mesh combining
 - 🧠 **Scene Intelligence** - Context-aware queries (find objects by name, tag, proximity)
 - ⚡ **Real-Time Generation** - Create complete worlds with terrain, lighting, and props in 2-10 seconds
-- 📚 **Complete Documentation** - 30,000+ words across comprehensive guides
+- 📚 **Complete Documentation** - 40,000+ words across comprehensive guides
 
 ---
 
@@ -62,7 +63,81 @@ The **Unity AI Scene Builder Tool** is a revolutionary system that enables real-
 
 ---
 
-## 🏛️ Feature Showcase: Geodesic Dome with Oculus (NEWEST!)
+## 📸 Feature Showcase: Image-to-Scene Generation (NEWEST!)
+
+**Upload Any Image → Get a Unity Scene in Minutes**
+
+Transform photos, drawings, or concept art into 3D Unity scenes using Vision Language Models (VLM).
+
+### Quick Start
+
+```powershell
+# Analyze your image
+cd UnityMCP
+.\image-to-scene.ps1 -ImagePath "your-image.jpg" -AnalysisType "scene"
+
+# Follow prompts to use Claude/GPT-4V
+# Then generate the scene
+.\generate-scene-from-json.ps1 -JsonPath "analysis.json" -Execute
+```
+
+### What Can Be Generated
+
+- ✅ **Single Objects** - Statues, furniture, vehicles, props
+- ✅ **Complete Scenes** - Rooms, outdoor areas, landscapes  
+- ✅ **Architecture** - Buildings, houses, monuments, temples
+- ✅ **Environments** - Forests, deserts, cities, natural landscapes
+
+### How It Works
+
+1. **Upload Image** - Any photo, drawing, or concept art (.jpg, .png, .gif, .webp)
+2. **VLM Analysis** - AI analyzes objects, spatial relationships, materials, lighting
+3. **Script Generation** - Automatic PowerShell script creation
+4. **Scene Creation** - Executable script builds scene in Unity
+5. **Optimization** - 60x performance gain via mesh combining
+
+### Analysis Types
+
+| Type | Best For | Example Use |
+|------|----------|-------------|
+| `object` | Single items | Statue, vase, furniture |
+| `scene` | Multiple objects | Room interior, plaza |
+| `architecture` | Buildings | House, temple, monument |
+| `environment` | Landscapes | Forest, desert, city |
+
+### Detail Levels (1-10)
+
+- **1-3:** Minimal - Basic shapes (2-10 objects)
+- **4-6:** Recommended - Good balance (10-30 objects)
+- **7-9:** High detail - Complex scenes (30-100 objects)
+- **10:** Maximum - Every element (100+ objects)
+
+### Example Results
+
+```powershell
+# Simple statue (DetailLevel 5)
+.\image-to-scene.ps1 -ImagePath "statue.jpg" -AnalysisType "object"
+# Result: 2-10 primitive components in ~10 seconds
+
+# Room interior (DetailLevel 6)  
+.\image-to-scene.ps1 -ImagePath "bedroom.jpg" -AnalysisType "scene"
+# Result: Furniture and layout in ~20 seconds
+
+# Building exterior (DetailLevel 7)
+.\image-to-scene.ps1 -ImagePath "house.jpg" -AnalysisType "architecture"
+# Result: Walls, windows, doors in ~30 seconds
+
+# Forest scene (DetailLevel 6)
+.\image-to-scene.ps1 -ImagePath "forest.jpg" -AnalysisType "environment"
+# Result: Trees and terrain in ~2 minutes
+```
+
+**See:** [IMAGE_TO_SCENE_GUIDE.md](UnityMCP/IMAGE_TO_SCENE_GUIDE.md) for complete documentation  
+**Quick Start:** [IMAGE_TO_SCENE_QUICK_START.md](UnityMCP/IMAGE_TO_SCENE_QUICK_START.md) for 5-minute tutorial
+
+---
+
+## 🏛️ Feature Showcase: Geodesic Dome with Oculus
 
 **Mathematical Perfection Meets Architectural Grandeur**
 
@@ -190,7 +265,18 @@ New-World -biome "SciFi" -worldSize 200 -density 80
 # Fantasy, Underwater, Arctic, Jungle, Wasteland
 ```
 
-### Build Luxury Villa (NEW! 🏰)
+### Generate Scene from Image (NEW! 📸)
+```powershell
+# Transform any image into a Unity scene
+.\image-to-scene.ps1 -ImagePath "your-image.jpg" -AnalysisType "scene"
+
+# Features: VLM-powered analysis, automatic script generation
+# Supported: Objects, scenes, architecture, environments
+# Time: 10 seconds - 5 minutes | Detail levels: 1-10
+# See: IMAGE_TO_SCENE_GUIDE.md for details
+```
+
+### Build Luxury Villa
 ```powershell
 # Generate a 3-story Mediterranean villa with 400+ objects
 .\build-luxury-villa.ps1
@@ -246,23 +332,30 @@ $nearby = Find-Objects -radius 50 -position @{ x=0; y=0; z=0 }
 ## 📖 Documentation
 
 ### Getting Started
+- **[IMAGE_TO_SCENE_QUICK_START.md](UnityMCP/IMAGE_TO_SCENE_QUICK_START.md)** - 5-minute image-to-scene tutorial (NEWEST! 📸)
+- **[V2_QUICK_REFERENCE.md](UnityMCP/V2_QUICK_REFERENCE.md)** - Essential commands (2-minute read)
+
+### Image-to-Scene System (NEWEST! 📸)
+- **[IMAGE_TO_SCENE_GUIDE.md](UnityMCP/IMAGE_TO_SCENE_GUIDE.md)** - Complete VLM integration guide (30-minute read)
+- **[CURRENT_BUILDING_BLOCKS.md](UnityMCP/CURRENT_BUILDING_BLOCKS.md)** - All 31 tools and capabilities inventory
+- **[IMAGE_TO_SCENE_QUICK_START.md](UnityMCP/IMAGE_TO_SCENE_QUICK_START.md)** - Quick start guide (5-minute read)
+
 ### Featured Projects
-- **[GEODESIC_DOME_GUIDE.md](UnityMCP/GEODESIC_DOME_GUIDE.md)** - Mathematical dome with oculus (1,600-2,400 objects) (NEWEST!)
-- **[GEODESIC_DOME_VISUAL.md](UnityMCP/GEODESIC_DOME_VISUAL.md)** - Visual reference and ASCII art (NEWEST!)
-- **[GEODESIC_DOME_QUICK_REF.md](UnityMCP/GEODESIC_DOME_QUICK_REF.md)** - Quick reference card (NEWEST!)
+- **[GEODESIC_DOME_GUIDE.md](UnityMCP/GEODESIC_DOME_GUIDE.md)** - Mathematical dome with oculus (1,600-2,400 objects)
+- **[GEODESIC_DOME_VISUAL.md](UnityMCP/GEODESIC_DOME_VISUAL.md)** - Visual reference and ASCII art
+- **[GEODESIC_DOME_QUICK_REF.md](UnityMCP/GEODESIC_DOME_QUICK_REF.md)** - Quick reference card
 - **[BUILDING21_GUIDE.md](UnityMCP/BUILDING21_GUIDE.md)** - Call of Duty B21 replica (500+ objects, 8 levels)
 - **[BUILDING21_VISUAL_MAP.md](UnityMCP/BUILDING21_VISUAL_MAP.md)** - ASCII floor maps and navigation
 - **[BUILDING21_QUICK_REF.md](UnityMCP/BUILDING21_QUICK_REF.md)** - Quick reference card
 
 ### System Documentation
 - **[WORLD_GENERATION_GUIDE.md](UnityMCP/WORLD_GENERATION_GUIDE.md)** - Complete world generation guide
-- **[V2_QUICK_REFERENCE.md](UnityMCP/V2_QUICK_REFERENCE.md)** - Essential commands (2-minute read)
-- **[VILLA_QUICK_START.md](UnityMCP/VILLA_QUICK_START.md)** - Build a villa in 3 minutes (NEW! 🏰)
+- **[VILLA_QUICK_START.md](UnityMCP/VILLA_QUICK_START.md)** - Build a villa in 3 minutes
 
 ### Complete Guides
 - **[V2_DOCUMENTATION.md](UnityMCP/V2_DOCUMENTATION.md)** - Complete system guide (30-minute read)
 - **[WORLD_GENERATION_GUIDE.md](UnityMCP/WORLD_GENERATION_GUIDE.md)** - Complete world generation guide
-- **[LUXURY_VILLA_GUIDE.md](UnityMCP/LUXURY_VILLA_GUIDE.md)** - Detailed villa architecture guide (NEW! 🏰)
+- **[LUXURY_VILLA_GUIDE.md](UnityMCP/LUXURY_VILLA_GUIDE.md)** - Detailed villa architecture guide
 
 ### Technical References
 - **[V2_IMPLEMENTATION_SUMMARY.md](UnityMCP/V2_IMPLEMENTATION_SUMMARY.md)** - Technical deep dive
