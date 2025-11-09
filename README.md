@@ -13,7 +13,8 @@
 The **Unity AI Scene Builder Tool** is a revolutionary system that enables real-time text-to-world generation in Unity. Create complete 3D scenes, apply production-quality materials, optimize performance, and design entire levels using natural language commands.
 
 **Key Features:**
-- 🌃 **Sci-Fi Capital Generator** - 800+ object cyberpunk metropolis with 20 ultra-tall skyscrapers (NEWEST!)
+- 🚀 **Space Rock Platforms** - Ultimate battle arenas on comet-like asteroids with 3 elemental themes (THE GEM! ✨)
+- 🌃 **Sci-Fi Capital Generator** - 800+ object cyberpunk metropolis with 20 ultra-tall skyscrapers
 - 🏰 **Luxury Villa Generator** - 400+ object Mediterranean villa in 3 minutes
 - 🌍 **Complete World Generation** - Generate entire playable worlds in seconds (10 biome types)
 - 🎨 **Materials System** - 14 predefined PBR materials + custom color/metallic/smoothness/emission
@@ -61,7 +62,36 @@ The **Unity AI Scene Builder Tool** is a revolutionary system that enables real-
 
 ---
 
-## 🌃 Feature Showcase: Sci-Fi Capital of the Future (NEWEST!)
+## 🚀 Feature Showcase: Space Rock Platforms (THE GEM! ✨)
+
+**Three Elemental Battle Arenas on Comet-Like Asteroids**
+
+```powershell
+.\create-space-rock-platforms.ps1
+```
+
+### What You Get
+- ✅ **3 Unique Platforms** - Normal (skull theme), Fire (volcanic), Ice (frozen)
+- ✅ **Evil Towers** - 25-28 unit tall towers with legendary glowing gems
+- ✅ **Comet-Like Asteroids** - Irregular rocky bases with debris (27+ objects each)
+- ✅ **Large Battle Arenas** - 40-42 unit diameter for aerial combat
+- ✅ **Elemental Themes** - Skulls, lava veins, ice crystals
+- ✅ **Space Environment** - Distant stars and atmospheric effects
+- ✅ **Legendary Gems** - Diamond targets with 5.0 emission intensity
+
+### Technical Achievement
+- **264 Objects** creating three complete battle arenas
+- **Reusable Helper Functions** - `Build-CometBase` and `Build-EvilTower`
+- **Quality-Focused Design** - Every object serves gameplay
+- **Strategic Positioning** - 80 units apart at consistent height
+- **Theme Consistency** - Distinct visual identity per platform
+- **Complete Documentation** - 35KB across 3 guides + ASCII art
+
+**See:** `SPACE_ROCK_PLATFORMS_GUIDE.md` for complete details, `SPACE_ROCK_QUICK_REF.md` for quick reference, and `SPACE_ROCK_VISUAL_SUMMARY.md` for ASCII art visualization
+
+---
+
+## 🌃 Sci-Fi Capital of the Future
 
 **The Ultimate Ropeswing Paradise - Spider-Man Would Be Jealous!**
 
@@ -112,7 +142,24 @@ The **Unity AI Scene Builder Tool** is a revolutionary system that enables real-
 
 ## 💡 Usage Examples
 
-### Building 21 - Call of Duty DMZ Replica (NEW!)
+### Space Rock Platforms - Ultimate Battle Arenas (THE GEM! ✨)
+```powershell
+# Create three elemental battle platforms (264 objects)
+cd UnityMCP
+.\create-space-rock-platforms.ps1
+
+# Result: Three comet-like platforms with:
+# - Normal: Gray asteroid with purple gem, skull decorations
+# - Fire: Volcanic asteroid with red gem, lava effects
+# - Ice: Frozen asteroid with cyan gem, ice crystals
+# - Each with evil tower (25-28 units tall)
+# - Large battle arenas (40-42 unit diameter)
+# - Space environment with distant stars
+# Time: 10-15 seconds
+```
+**See [SPACE_ROCK_PLATFORMS_GUIDE.md](UnityMCP/SPACE_ROCK_PLATFORMS_GUIDE.md) for complete documentation.**
+
+### Building 21 - Call of Duty DMZ Replica
 ```powershell
 # Create complete B21 military facility (500+ objects)
 cd UnityMCP
