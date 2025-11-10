@@ -1043,6 +1043,205 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ['origin', 'direction'],
         },
       },
+      {
+        name: 'unity_generate_point_cloud',
+        description: 'Generate realistic terrain using point cloud data with Perlin noise. Creates LiDAR-style terrain representation with height-based coloring. Perfect for organic, natural-looking landscapes.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              description: 'Name of the point cloud terrain object',
+              default: 'PointCloudTerrain'
+            },
+            pointCount: {
+              type: 'number',
+              description: 'Number of points to generate (10000-50000 recommended)',
+              default: 10000
+            },
+            areaSize: {
+              type: 'number',
+              description: 'Size of terrain area in units',
+              default: 100
+            },
+            noiseAmplitude: {
+              type: 'number',
+              description: 'Height variation amount (5-50 units)',
+              default: 10
+            },
+            noiseScale: {
+              type: 'number',
+              description: 'Scale of noise features (0.01-0.2, smaller = larger features)',
+              default: 0.1
+            },
+            seed: {
+              type: 'number',
+              description: 'Random seed for reproducible terrain (0 = random)',
+              default: 0
+            },
+            asSurface: {
+              type: 'boolean',
+              description: 'Convert to surface mesh (true) or keep as points (false)',
+              default: true
+            },
+            gridResolution: {
+              type: 'number',
+              description: 'Grid resolution for surface mesh (20-100)',
+              default: 50
+            }
+          },
+          required: ['name']
+        }
+      },
+      {
+        name: 'unity_generate_procedural_terrain',
+        description: 'Generate advanced procedural terrain using multiple noise algorithms (Perlin, Simplex, Voronoi, Ridged, Billow). Supports multi-octave noise for detailed, realistic terrain with automatic height-based coloring.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              description: 'Name of the procedural terrain object',
+              default: 'ProceduralTerrain'
+            },
+            width: {
+              type: 'number',
+              description: 'Width of terrain in units',
+              default: 100
+            },
+            height: {
+              type: 'number',
+              description: 'Depth of terrain in units',
+              default: 100
+            },
+            amplitude: {
+              type: 'number',
+              description: 'Maximum height variation',
+              default: 10
+            },
+            noiseType: {
+              type: 'string',
+              description: 'Noise algorithm type',
+              enum: ['Perlin', 'Simplex', 'Voronoi', 'Ridged', 'Billow'],
+              default: 'Perlin'
+            },
+            octaves: {
+              type: 'number',
+              description: 'Number of noise layers for detail (1-8)',
+              default: 4
+            },
+            persistence: {
+              type: 'number',
+              description: 'Amplitude decrease per octave (0.3-0.7)',
+              default: 0.5
+            },
+            lacunarity: {
+              type: 'number',
+              description: 'Frequency increase per octave (1.5-3.0)',
+              default: 2.0
+            },
+            seed: {
+              type: 'number',
+              description: 'Random seed for reproducible terrain',
+              default: 0
+            }
+          },
+          required: ['name']
+        }
+      },
+      {
+        name: 'unity_generate_building_facade',
+        description: 'Generate procedural building facade with windows, doors, and optional balconies. Creates realistic architectural exteriors with customizable floors, window patterns, and materials.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              description: 'Name of the building object',
+              default: 'Building'
+            },
+            floors: {
+              type: 'number',
+              description: 'Number of floors (1-30)',
+              default: 5
+            },
+            floorHeight: {
+              type: 'number',
+              description: 'Height of each floor in units',
+              default: 3.0
+            },
+            windowsPerFloor: {
+              type: 'number',
+              description: 'Number of windows per floor (1-10)',
+              default: 4
+            },
+            addDoor: {
+              type: 'boolean',
+              description: 'Add entrance door on ground floor',
+              default: true
+            },
+            addBalconies: {
+              type: 'boolean',
+              description: 'Add balconies to each floor (except ground)',
+              default: false
+            },
+            position: {
+              type: 'object',
+              description: 'World position (x, y, z)',
+              properties: {
+                x: { type: 'number' },
+                y: { type: 'number' },
+                z: { type: 'number' }
+              }
+            }
+          },
+          required: ['name']
+        }
+      },
+      {
+        name: 'unity_generate_lsystem_tree',
+        description: 'Generate procedural tree using L-System (Lindenmayer system) grammar. Creates organic, realistic branching patterns. Use preset="tree" for default oak-like tree or customize rules for unique species.',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              description: 'Name of the tree object',
+              default: 'Tree'
+            },
+            preset: {
+              type: 'string',
+              description: 'Use preset configuration (tree = default oak-like)',
+              default: 'tree'
+            },
+            iterations: {
+              type: 'number',
+              description: 'Number of L-System iterations (2-6, higher = more complex)',
+              default: 4
+            },
+            angle: {
+              type: 'number',
+              description: 'Branch angle in degrees (15-45)',
+              default: 25
+            },
+            segmentLength: {
+              type: 'number',
+              description: 'Length of each branch segment',
+              default: 1.0
+            },
+            position: {
+              type: 'object',
+              description: 'World position (x, y, z)',
+              properties: {
+                x: { type: 'number' },
+                y: { type: 'number' },
+                z: { type: 'number' }
+              }
+            }
+          },
+          required: ['name']
+        }
+      }
     ],
   };
 });
@@ -1353,6 +1552,56 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           direction: args.direction,
           maxDistance: args.maxDistance || 1000,
           layerMask: args.layerMask
+        });
+        break;
+
+      case 'unity_generate_point_cloud':
+        result = await callUnity('/generatePointCloud', {
+          name: args.name || 'PointCloudTerrain',
+          pointCount: args.pointCount || 10000,
+          areaSize: args.areaSize || 100,
+          noiseAmplitude: args.noiseAmplitude || 10,
+          noiseScale: args.noiseScale || 0.1,
+          seed: args.seed || 0,
+          asSurface: args.asSurface !== undefined ? args.asSurface : true,
+          gridResolution: args.gridResolution || 50
+        });
+        break;
+
+      case 'unity_generate_procedural_terrain':
+        result = await callUnity('/generateProceduralTerrain', {
+          name: args.name || 'ProceduralTerrain',
+          width: args.width || 100,
+          height: args.height || 100,
+          amplitude: args.amplitude || 10,
+          noiseType: args.noiseType || 'Perlin',
+          octaves: args.octaves || 4,
+          persistence: args.persistence || 0.5,
+          lacunarity: args.lacunarity || 2.0,
+          seed: args.seed || 0
+        });
+        break;
+
+      case 'unity_generate_building_facade':
+        result = await callUnity('/generateBuildingFacade', {
+          name: args.name || 'Building',
+          floors: args.floors || 5,
+          floorHeight: args.floorHeight || 3.0,
+          windowsPerFloor: args.windowsPerFloor || 4,
+          addDoor: args.addDoor !== undefined ? args.addDoor : true,
+          addBalconies: args.addBalconies || false,
+          position: args.position
+        });
+        break;
+
+      case 'unity_generate_lsystem_tree':
+        result = await callUnity('/generateLSystemTree', {
+          name: args.name || 'Tree',
+          preset: args.preset || 'tree',
+          iterations: args.iterations || 4,
+          angle: args.angle || 25,
+          segmentLength: args.segmentLength || 1.0,
+          position: args.position
         });
         break;
 

@@ -226,6 +226,16 @@ namespace UnityMCP
                     return Raycast(json);
                 case "/ping":
                     return "{\"status\": \"ok\"}";
+                case "/generatePointCloud":
+                    return GeneratePointCloud(json);
+                case "/generateProceduralTerrain":
+                    return GenerateProceduralTerrain(json);
+                case "/generateBuildingFacade":
+                    return GenerateBuildingFacade(json);
+                case "/generateLSystemTree":
+                    return GenerateLSystemTree(json);
+                case "/convertPointCloudToMesh":
+                    return ConvertPointCloudToMesh(json);
                 default:
                     throw new Exception($"Unknown command: {path}");
             }
@@ -1900,6 +1910,269 @@ namespace UnityMCP
         private static string EscapeJson(string str)
         {
             return str.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "\\r");
+        }
+
+        /// <summary>
+        /// Generate terrain point cloud with Perlin noise
+        /// </summary>
+        private static string GeneratePointCloud(Dictionary<string, object> json)
+        {
+            try
+            {
+                var settings = new PointCloudGenerator.PointCloudSettings
+                {
+                    pointCount = GetInt(json, "pointCount", 10000),
+                    areaSize = GetFloat(json, "areaSize", 100f),
+                    heightVariation = GetFloat(json, "heightVariation", 20f),
+                    usePerlinNoise = GetBool(json, "usePerlinNoise", true),
+                    noiseScale = GetFloat(json, "noiseScale", 0.1f),
+                    noiseAmplitude = GetFloat(json, "noiseAmplitude", 10f),
+                    noiseSeed = GetInt(json, "seed", 0),
+                    colorByHeight = GetBool(json, "colorByHeight", true),
+                    generateNormals = GetBool(json, "generateNormals", true)
+                };
+
+                string name = GetString(json, "name", "PointCloudTerrain");
+                bool asSurface = GetBool(json, "asSurface", true);
+                int gridResolution = GetInt(json, "gridResolution", 50);
+
+                var points = PointCloudGenerator.GenerateTerrainPointCloud(settings);
+                var go = PointCloudGenerator.CreatePointCloudObject(name, points, asSurface, gridResolution);
+
+                return $"{{\"success\": true, \"name\": \"{EscapeJson(go.name)}\", \"pointCount\": {points.Count}, " +
+                       $"\"position\": {{\"x\": {go.transform.position.x}, \"y\": {go.transform.position.y}, \"z\": {go.transform.position.z}}}}}";
+            }
+            catch (Exception e)
+            {
+                return $"{{\"error\": \"{EscapeJson(e.Message)}\"}}";
+            }
+        }
+
+        /// <summary>
+        /// Generate procedural terrain mesh using advanced noise algorithms
+        /// </summary>
+        private static string GenerateProceduralTerrain(Dictionary<string, object> json)
+        {
+            try
+            {
+                var settings = new ProceduralMeshGenerator.TerrainSettings
+                {
+                    width = GetInt(json, "width", 100),
+                    height = GetInt(json, "height", 100),
+                    scale = GetFloat(json, "scale", 20f),
+                    amplitude = GetFloat(json, "amplitude", 10f),
+                    octaves = GetInt(json, "octaves", 4),
+                    persistence = GetFloat(json, "persistence", 0.5f),
+                    lacunarity = GetFloat(json, "lacunarity", 2f),
+                    seed = GetInt(json, "seed", 0),
+                    colorByHeight = GetBool(json, "colorByHeight", true)
+                };
+
+                // Parse noise type
+                string noiseTypeStr = GetString(json, "noiseType", "Perlin");
+                if (Enum.TryParse(noiseTypeStr, true, out ProceduralMeshGenerator.NoiseType noiseType))
+                {
+                    settings.noiseType = noiseType;
+                }
+
+                string name = GetString(json, "name", "ProceduralTerrain");
+                Mesh mesh = ProceduralMeshGenerator.GenerateTerrainMesh(settings);
+
+                GameObject go = new GameObject(name);
+                MeshFilter meshFilter = go.AddComponent<MeshFilter>();
+                MeshRenderer meshRenderer = go.AddComponent<MeshRenderer>();
+                meshFilter.sharedMesh = mesh;
+
+                Material material = new Material(Shader.Find("Standard"));
+                material.color = Color.white;
+                meshRenderer.sharedMaterial = material;
+
+                Undo.RegisterCreatedObjectUndo(go, "Generate Procedural Terrain");
+                EditorUtility.SetDirty(go);
+
+                return $"{{\"success\": true, \"name\": \"{EscapeJson(go.name)}\", \"vertices\": {mesh.vertexCount}, " +
+                       $"\"triangles\": {mesh.triangles.Length / 3}}}";
+            }
+            catch (Exception e)
+            {
+                return $"{{\"error\": \"{EscapeJson(e.Message)}\"}}";
+            }
+        }
+
+        /// <summary>
+        /// Generate procedural building facade with windows and details
+        /// </summary>
+        private static string GenerateBuildingFacade(Dictionary<string, object> json)
+        {
+            try
+            {
+                var settings = new ProceduralMeshGenerator.BuildingFacadeSettings
+                {
+                    floors = GetInt(json, "floors", 5),
+                    floorHeight = GetFloat(json, "floorHeight", 3f),
+                    windowsPerFloor = GetInt(json, "windowsPerFloor", 4),
+                    windowWidth = GetFloat(json, "windowWidth", 1.5f),
+                    windowHeight = GetFloat(json, "windowHeight", 2f),
+                    wallThickness = GetFloat(json, "wallThickness", 0.3f),
+                    addDoor = GetBool(json, "addDoor", true),
+                    addBalconies = GetBool(json, "addBalconies", false)
+                };
+
+                // Parse colors if provided
+                if (json.ContainsKey("wallColor"))
+                {
+                    var colorDict = (Dictionary<string, object>)json["wallColor"];
+                    settings.wallColor = new Color(
+                        GetFloat(colorDict, "r", 0.8f),
+                        GetFloat(colorDict, "g", 0.8f),
+                        GetFloat(colorDict, "b", 0.8f),
+                        GetFloat(colorDict, "a", 1f)
+                    );
+                }
+
+                if (json.ContainsKey("windowColor"))
+                {
+                    var colorDict = (Dictionary<string, object>)json["windowColor"];
+                    settings.windowColor = new Color(
+                        GetFloat(colorDict, "r", 0.2f),
+                        GetFloat(colorDict, "g", 0.3f),
+                        GetFloat(colorDict, "b", 0.4f),
+                        GetFloat(colorDict, "a", 1f)
+                    );
+                }
+
+                string name = GetString(json, "name", "BuildingFacade");
+                GameObject building = ProceduralMeshGenerator.GenerateBuildingFacade(name, settings);
+
+                // Set position if provided
+                if (json.ContainsKey("position"))
+                {
+                    var posDict = (Dictionary<string, object>)json["position"];
+                    building.transform.position = new Vector3(
+                        GetFloat(posDict, "x", 0),
+                        GetFloat(posDict, "y", 0),
+                        GetFloat(posDict, "z", 0)
+                    );
+                }
+
+                int childCount = building.transform.childCount;
+                return $"{{\"success\": true, \"name\": \"{EscapeJson(building.name)}\", \"floors\": {settings.floors}, " +
+                       $"\"childObjects\": {childCount}}}";
+            }
+            catch (Exception e)
+            {
+                return $"{{\"error\": \"{EscapeJson(e.Message)}\"}}";
+            }
+        }
+
+        /// <summary>
+        /// Generate L-System tree/plant with procedural rules
+        /// </summary>
+        private static string GenerateLSystemTree(Dictionary<string, object> json)
+        {
+            try
+            {
+                ProceduralMeshGenerator.LSystemSettings settings;
+
+                // Check for preset
+                string preset = GetString(json, "preset", "");
+                if (preset.ToLower() == "tree" || preset.ToLower() == "default")
+                {
+                    settings = ProceduralMeshGenerator.CreateDefaultTreeSettings();
+                }
+                else
+                {
+                    settings = new ProceduralMeshGenerator.LSystemSettings
+                    {
+                        axiom = GetString(json, "axiom", "F"),
+                        iterations = GetInt(json, "iterations", 4),
+                        segmentLength = GetFloat(json, "segmentLength", 1f),
+                        angle = GetFloat(json, "angle", 25f),
+                        radiusReduction = GetFloat(json, "radiusReduction", 0.8f),
+                        initialRadius = GetFloat(json, "initialRadius", 0.3f)
+                    };
+
+                    // Parse custom rules if provided
+                    if (json.ContainsKey("rules"))
+                    {
+                        var rulesArray = json["rules"] as object[];
+                        if (rulesArray != null)
+                        {
+                            foreach (var ruleObj in rulesArray)
+                            {
+                                var ruleDict = ruleObj as Dictionary<string, object>;
+                                if (ruleDict != null)
+                                {
+                                    char symbol = GetString(ruleDict, "symbol", "F")[0];
+                                    string replacement = GetString(ruleDict, "replacement", "F");
+                                    settings.rules.Add(new ProceduralMeshGenerator.LSystemRule(symbol, replacement));
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Override colors if provided
+                if (json.ContainsKey("trunkColor"))
+                {
+                    var colorDict = (Dictionary<string, object>)json["trunkColor"];
+                    settings.trunkColor = new Color(
+                        GetFloat(colorDict, "r", 0.4f),
+                        GetFloat(colorDict, "g", 0.3f),
+                        GetFloat(colorDict, "b", 0.2f),
+                        GetFloat(colorDict, "a", 1f)
+                    );
+                }
+
+                if (json.ContainsKey("leafColor"))
+                {
+                    var colorDict = (Dictionary<string, object>)json["leafColor"];
+                    settings.leafColor = new Color(
+                        GetFloat(colorDict, "r", 0.2f),
+                        GetFloat(colorDict, "g", 0.6f),
+                        GetFloat(colorDict, "b", 0.2f),
+                        GetFloat(colorDict, "a", 1f)
+                    );
+                }
+
+                string name = GetString(json, "name", "LSystemTree");
+                GameObject tree = ProceduralMeshGenerator.GenerateLSystemTree(name, settings);
+
+                // Set position if provided
+                if (json.ContainsKey("position"))
+                {
+                    var posDict = (Dictionary<string, object>)json["position"];
+                    tree.transform.position = new Vector3(
+                        GetFloat(posDict, "x", 0),
+                        GetFloat(posDict, "y", 0),
+                        GetFloat(posDict, "z", 0)
+                    );
+                }
+
+                int childCount = tree.transform.childCount;
+                return $"{{\"success\": true, \"name\": \"{EscapeJson(tree.name)}\", \"branches\": {childCount}}}";
+            }
+            catch (Exception e)
+            {
+                return $"{{\"error\": \"{EscapeJson(e.Message)}\"}}";
+            }
+        }
+
+        /// <summary>
+        /// Convert point cloud to mesh (standalone conversion without creating object)
+        /// </summary>
+        private static string ConvertPointCloudToMesh(Dictionary<string, object> json)
+        {
+            try
+            {
+                // This is a placeholder for converting existing point cloud data
+                // In a full implementation, you'd store point cloud data and reference it
+                return "{\"error\": \"Point cloud conversion requires existing point cloud data. Use generatePointCloud with asSurface=true instead.\"}";
+            }
+            catch (Exception e)
+            {
+                return $"{{\"error\": \"{EscapeJson(e.Message)}\"}}";
+            }
         }
     }
 }
